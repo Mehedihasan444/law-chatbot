@@ -1,0 +1,344 @@
+"""
+Data processor for Bangladesh Constitution Chatbot (English only)
+Handles downloading, extracting, and preprocessing of Constitution text
+"""
+import os
+import re
+import sys
+import json
+import argparse
+from pathlib import Path
+from typing import List, Dict, Tuple, Optional
+from urllib.parse import urlparse
+
+import requests
+import PyPDF2
+import pdfplumber
+from tqdm import tqdm
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+# Add parent directory to path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from config.config import Config
+
+class ConstitutionProcessor:
+    """Processes Bangladesh Constitution data for RAG pipeline (English only)"""
+    
+    def __init__(self):
+        self.config = Config()
+        self.ensure_directories()
+    
+    def ensure_directories(self):
+        """Create necessary directories if they don't exist"""
+        for directory in [
+            self.config.RAW_DATA_DIR,
+            self.config.PROCESSED_DATA_DIR,
+            self.config.VECTORSTORE_DIR
+        ]:
+            os.makedirs(directory, exist_ok=True)
+    
+    def download_file(self, url: str, filename: str) -> bool:
+        """Download a file from URL"""
+        filepath = os.path.join(self.config.RAW_DATA_DIR, filename)
+        
+        # Check if file already exists
+        if os.path.exists(filepath):
+            print(f"File {filename} already exists. Skipping download.")
+            return True
+        
+        try:
+            print(f"Downloading {filename}...")
+            response = requests.get(url, stream=True)
+            response.raise_for_status()
+            
+            total_size = int(response.headers.get('content-length', 0))
+            
+            with open(filepath, 'wb') as file, tqdm(
+                desc=filename,
+                total=total_size,
+                unit='B',
+                unit_scale=True,
+                unit_divisor=1024,
+            ) as pbar:
+                for chunk in response.iter_content(chunk_size=8192):
+                    size = file.write(chunk)
+                    pbar.update(size)
+            
+            print(f"Successfully downloaded {filename}")
+            return True
+            
+        except Exception as e:
+            print(f"Error downloading {filename}: {e}")
+            return False
+    
+    def download_constitution_files(self) -> bool:
+        """Download Constitution file (English only)"""
+        # Download English version only
+        return self.download_file(
+            self.config.CONSTITUTION_EN_URL, 
+            "bangladesh_constitution_en.pdf"
+        )
+    
+    def extract_text_from_pdf(self, pdf_path: str) -> str:
+        """Extract text from PDF using multiple methods for best results"""
+        text = ""
+        
+        # Try pdfplumber first (better for complex layouts)
+        try:
+            with pdfplumber.open(pdf_path) as pdf:
+                for page in pdf.pages:
+                    page_text = page.extract_text()
+                    if page_text:
+                        text += page_text + "\n"
+        except Exception as e:
+            print(f"pdfplumber failed: {e}")
+        
+        # Fallback to PyPDF2 if pdfplumber fails or returns empty
+        if not text.strip():
+            try:
+                with open(pdf_path, 'rb') as file:
+                    reader = PyPDF2.PdfReader(file)
+                    for page in reader.pages:
+                        page_text = page.extract_text()
+                        if page_text:
+                            text += page_text + "\n"
+            except Exception as e:
+                print(f"PyPDF2 also failed: {e}")
+        
+        return text
+    
+    def clean_text(self, text: str, language: str = "en") -> str:
+        """Clean and normalize extracted text."""
+        if not text.strip():
+            return ""
+        
+        # General cleanup
+        text = re.sub(r'\[\s*\d+\s*\]', '', text)  # Remove bracketed numbers like [1]
+        text = text.replace("THE CONSTITUTION OF THE PEOPLE'S REPUBLIC OF BANGLADESH", "")
+        
+        # Normalize whitespace and remove excessive newlines
+        text = re.sub(r'\s+', ' ', text).strip()
+        text = re.sub(r'(\n\s*){2,}', '\n', text)
+
+        # Remove page numbers and headers/footers more robustly
+        text = re.sub(r'Page\s+\d+\s+of\s+\d+', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'^\s*\d+\s*$', '', text, flags=re.MULTILINE) # Remove lines containing only numbers
+
+        # Specific fixes for common OCR errors
+        text = text.replace("1[", "").replace("2[", "") # Common OCR error
+        
+        return text.strip()
+    
+    def detect_language(self, text: str) -> str:
+        """Always returns 'en' since we only support English"""
+        return 'en'
+    
+    def _get_article_pattern(self, language: str) -> str:
+        """Returns the regex pattern for splitting by articles (English only)."""
+        # Matches "PART...", "PREAMBLE", "ARTICLE 1", "SCHEDULE"
+        return r'(?=\bPART\s+[IVXLC]+\b|PREAMBLE|ARTICLE\s+\d+[A-Z]?\b|THE\s+\w+\s+SCHEDULE\b)'
+
+    def hybrid_chunking_strategy(self, text: str, language: str) -> List[Dict]:
+        """
+        Combines logical (article-based) and semantic (size-based) chunking.
+        1. Splits the document by major logical boundaries (Parts, Articles).
+        2. For each logical section, uses a text splitter to create smaller semantic chunks.
+        """
+        all_chunks = []
+        
+        # 1. Split the document by major logical sections (Articles, Parts, etc.)
+        article_pattern = self._get_article_pattern(language)
+        logical_sections = re.split(article_pattern, text)
+        
+        # Initialize splitter
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=self.config.CHUNK_SIZE,
+            chunk_overlap=self.config.CHUNK_OVERLAP,
+            separators=["\n\n", "\n", ". ", " ", ""]
+        )
+
+        current_metadata = {}
+        
+        for section in logical_sections:
+            if not section.strip():
+                continue
+
+            # Update metadata if the section is a new header (Part, Article, etc.)
+            header_match = re.match(r'(PART\s+[IVXLC]+)|(ARTICLE\s+\d+[A-Z]?)|(PREAMBLE)|(THE\s+\w+\s+SCHEDULE)', section)
+
+            if header_match:
+                if header_match.group(1): # PART
+                    current_metadata['part'] = section.strip()
+                elif header_match.group(2): # ARTICLE
+                    current_metadata['article'] = section.strip()
+                    current_metadata['article_number'] = self._extract_article_number(section)
+                elif header_match.group(3): # PREAMBLE
+                    current_metadata['part'] = 'PREAMBLE'
+                elif header_match.group(4): # SCHEDULE
+                    current_metadata['part'] = section.strip()
+
+            # 2. Split the current section into smaller semantic chunks
+            sub_chunks = text_splitter.split_text(section)
+            
+            for sub_chunk in sub_chunks:
+                chunk_metadata = {
+                    'source': 'Bangladesh Constitution',
+                    'language': language,
+                    'last_amended': '2018', # This should be ideally configured
+                    **current_metadata  # Inherit metadata from the parent section
+                }
+                
+                all_chunks.append({
+                    'content': sub_chunk,
+                    'metadata': chunk_metadata
+                })
+
+        # Post-process to merge content into metadata for clarity
+        for i, chunk in enumerate(all_chunks):
+            chunk['chunk_id'] = i
+            # To avoid redundancy, we can just keep the numbers
+            if 'article' in chunk['metadata']:
+                chunk['metadata']['article_header'] = chunk['metadata'].pop('article')
+
+        return all_chunks
+
+    def _extract_article_number(self, article_text: str) -> Optional[str]:
+        """Extract article number from article text"""
+        match = re.search(r'(\d+[A-Z]?)', article_text)
+        if match:
+            return match.group(1)
+        return None
+    
+    def process_constitution_files(self) -> bool:
+        """Process Constitution file (English only)"""
+        filepath = os.path.join(self.config.RAW_DATA_DIR, "bangladesh_constitution_en.pdf")
+        
+        if not os.path.exists(filepath):
+            print(f"File bangladesh_constitution_en.pdf not found. Please run --download first.")
+            return False
+        
+        print(f"Processing bangladesh_constitution_en.pdf...")
+        
+        # Extract text
+        text = self.extract_text_from_pdf(filepath)
+        if not text.strip():
+            print(f"No text extracted from bangladesh_constitution_en.pdf")
+            return False
+        
+        # Clean text
+        cleaned_text = self.clean_text(text, "en")
+        
+        # Language is always English
+        detected_lang = "en"
+        print(f"Processing language: {detected_lang}")
+        
+        # Save raw text
+        text_filename = f"constitution_{detected_lang}_raw.txt"
+        with open(os.path.join(self.config.PROCESSED_DATA_DIR, text_filename), 'w', encoding='utf-8') as f:
+            f.write(cleaned_text)
+        
+        # Use the hybrid chunking strategy
+        chunks = self.hybrid_chunking_strategy(cleaned_text, detected_lang)
+        print(f"Created {len(chunks)} chunks using hybrid strategy.")
+        
+        # Save chunks
+        chunks_filename = f"constitution_{detected_lang}_chunks.json"
+        with open(os.path.join(self.config.PROCESSED_DATA_DIR, chunks_filename), 'w', encoding='utf-8') as f:
+            json.dump(chunks, f, indent=2, ensure_ascii=False)
+        
+        # Save all chunks in standard format
+        final_chunks_for_json = [
+            {
+                "page_content": chunk['content'],
+                "metadata": chunk['metadata']
+            } for chunk in chunks
+        ]
+
+        with open(os.path.join(self.config.PROCESSED_DATA_DIR, "all_chunks.json"), 'w', encoding='utf-8') as f:
+            json.dump(final_chunks_for_json, f, indent=2, ensure_ascii=False)
+        
+        print(f"Total chunks created: {len(chunks)}")
+        return len(chunks) > 0
+    
+    def get_processing_stats(self) -> Dict:
+        """Get statistics about processed data"""
+        stats = {
+            'raw_files': [],
+            'processed_files': [],
+            'total_chunks': 0,
+            'chunks_by_language': {}
+        }
+        
+        # Check raw files
+        for filename in os.listdir(self.config.RAW_DATA_DIR):
+            if filename.endswith('.pdf'):
+                stats['raw_files'].append(filename)
+        
+        # Check processed files
+        for filename in os.listdir(self.config.PROCESSED_DATA_DIR):
+            stats['processed_files'].append(filename)
+        
+        # Check chunks
+        chunks_file = os.path.join(self.config.PROCESSED_DATA_DIR, "all_chunks.json")
+        if os.path.exists(chunks_file):
+            with open(chunks_file, 'r', encoding='utf-8') as f:
+                chunks = json.load(f)
+                stats['total_chunks'] = len(chunks)
+                
+                for chunk in chunks:
+                    lang = chunk.get('metadata', {}).get('language', 'unknown')
+                    if lang not in stats['chunks_by_language']:
+                        stats['chunks_by_language'][lang] = 0
+                    stats['chunks_by_language'][lang] += 1
+        
+        return stats
+
+def main():
+    """Main function for command line usage"""
+    parser = argparse.ArgumentParser(description="Process Bangladesh Constitution data (English only)")
+    parser.add_argument("--download", action="store_true", help="Download Constitution file")
+    parser.add_argument("--process", action="store_true", help="Process Constitution file into chunks")
+    parser.add_argument("--stats", action="store_true", help="Show processing statistics")
+    parser.add_argument("--all", action="store_true", help="Download and process all data")
+    
+    args = parser.parse_args()
+    
+    processor = ConstitutionProcessor()
+    
+    if args.all:
+        args.download = True
+        args.process = True
+    
+    if args.download:
+        print("Downloading Constitution file...")
+        success = processor.download_constitution_files()
+        if success:
+            print("✅ Download completed successfully")
+        else:
+            print("❌ Download failed")
+            return False
+    
+    if args.process:
+        print("Processing Constitution file...")
+        success = processor.process_constitution_files()
+        if success:
+            print("✅ Processing completed successfully")
+        else:
+            print("❌ Processing failed")
+            return False
+    
+    if args.stats:
+        stats = processor.get_processing_stats()
+        print("\n📊 Processing Statistics:")
+        print(f"Raw files: {len(stats['raw_files'])}")
+        print(f"Processed files: {len(stats['processed_files'])}")
+        print(f"Total chunks: {stats['total_chunks']}")
+        print("Chunks by language:")
+        for lang, count in stats['chunks_by_language'].items():
+            print(f"  {lang}: {count}")
+    
+    if not any([args.download, args.process, args.stats, args.all]):
+        parser.print_help()
+
+if __name__ == "__main__":
+    main()

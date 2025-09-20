@@ -1,0 +1,326 @@
+"""
+Streamlit Web Interface for Bangladesh Constitution Chatbot
+Provides user-friendly web interface with bilingual support
+"""
+import os
+import sys
+import streamlit as st
+import json
+from datetime import datetime, timedelta
+import time
+
+# Add parent directory to path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from config.config import Config
+from src.chatbot import ConstitutionChatbot
+
+# Page configuration
+st.set_page_config(
+    page_title="Bangladesh Constitution Chatbot",
+    page_icon="🏛️",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# Custom CSS for better styling
+st.markdown("""
+<style>
+    .main-header {
+        font-size: 2.5rem;
+        color: #1e3a8a;
+        text-align: center;
+        margin-bottom: 1rem;
+        font-weight: bold;
+    }
+    .sub-header {
+        font-size: 1.2rem;
+        color: #374151;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    .chat-message {
+        padding: 1rem;
+        margin: 1rem 0;
+        border-radius: 0.5rem;
+        border-left: 4px solid #1e3a8a;
+        background-color: #f8fafc;
+    }
+    .user-message {
+        background-color: #dbeafe;
+        border-left-color: #3b82f6;
+    }
+    .bot-message {
+        background-color: #f0f9ff;
+        border-left-color: #0ea5e9;
+    }
+    .stats-card {
+        background-color: #f1f5f9;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin: 0.5rem 0;
+    }
+    .disclaimer {
+        background-color: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+
+@st.cache_resource
+def initialize_chatbot():
+    """Initialize and cache the chatbot instance"""
+    try:
+        config = Config()
+        chatbot = ConstitutionChatbot(config)
+        if chatbot.is_ready():
+            return chatbot
+        else:
+            return None
+    except Exception as e:
+        st.error(f"Error initializing chatbot: {e}")
+        return None
+
+
+def display_conversation_history(chatbot):
+    """Display conversation history in sidebar"""
+    if "conversation_history" not in st.session_state:
+        st.session_state.conversation_history = []
+    
+    history = chatbot.get_conversation_history(10)
+    
+    if history:
+        st.sidebar.subheader("📜 Recent Conversations")
+        for i, conv in enumerate(reversed(history[-5:]), 1):
+            with st.sidebar.expander(f"Q{i}: {conv['query'][:30]}..."):
+                st.write(f"**Question:** {conv['query']}")
+                st.write(f"**Sources:** {conv['sources']}")
+                st.write(f"**Language:** {conv['language']}")
+                st.write(f"**Time:** {conv['timestamp'].strftime('%H:%M:%S')}")
+
+
+def display_system_stats(chatbot):
+    """Display system statistics in sidebar"""
+    stats = chatbot.get_session_stats()
+    
+    st.sidebar.subheader("📊 System Status")
+    
+    # System readiness
+    if chatbot.is_ready():
+        st.sidebar.success("✅ System Ready")
+    else:
+        st.sidebar.error("❌ System Not Ready")
+    
+    # Session stats
+    col1, col2 = st.sidebar.columns(2)
+    with col1:
+        st.metric("Queries", stats.get('queries_processed', 0))
+    with col2:
+        st.metric("Duration", f"{stats.get('session_duration_minutes', 0):.1f}m")
+    
+    # System components
+    if stats.get('embeddings_loaded'):
+        st.sidebar.success("📊 Embeddings: Ready")
+    else:
+        st.sidebar.error("📊 Embeddings: Not Ready")
+    
+    if stats.get('vectorstore_loaded'):
+        st.sidebar.success("🗃️ Vector Store: Ready")
+        if 'vector_store_size' in stats:
+            st.sidebar.info(f"Documents: {stats['vector_store_size']}")
+    else:
+        st.sidebar.error("🗃️ Vector Store: Not Ready")
+    
+    # Languages detected
+    if stats.get('languages_detected'):
+        langs = ', '.join(stats['languages_detected'])
+        st.sidebar.info(f"🌐 Languages: {langs}")
+
+
+def display_sample_queries():
+    """Display sample queries for users"""
+    st.subheader("💡 Sample Questions")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("**English Examples:**")
+        sample_queries_en = [
+            "What does Article 27 say about equality?",
+            "What are the fundamental rights in Bangladesh Constitution?",
+            "What is the role of the Prime Minister?",
+            "How can the Constitution be amended?",
+            "What does the Constitution say about freedom of speech?"
+        ]
+        
+        for query in sample_queries_en:
+            if st.button(query, key=f"en_{query}"):
+                st.session_state.sample_query = query
+    
+    with col2:
+        st.markdown("**বাংলা উদাহরণ:**")
+        sample_queries_bn = [
+            "সংবিধানের ২৭ অনুচ্ছেদে সমতার বিষয়ে কী বলা হয়েছে?",
+            "বাংলাদেশের সংবিধানে মৌলিক অধিকারগুলো কী কী?",
+            "প্রধানমন্ত্রীর ভূমিকা কী?",
+            "কীভাবে সংবিধান সংশোধন করা যায়?",
+            "বাক স্বাধীনতা সম্পর্কে সংবিধানে কী বলা হয়েছে?"
+        ]
+        
+        for query in sample_queries_bn:
+            if st.button(query, key=f"bn_{query}"):
+                st.session_state.sample_query = query
+
+
+def main():
+    """Main Streamlit app"""
+    
+    # Initialize session state
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    if "sample_query" not in st.session_state:
+        st.session_state.sample_query = ""
+    
+    # Header
+    st.markdown('<div class="main-header">🏛️ Bangladesh Constitution Chatbot</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sub-header">Ask questions about the Constitution of the People\'s Republic of Bangladesh</div>', unsafe_allow_html=True)
+    
+    # Initialize chatbot
+    chatbot = initialize_chatbot()
+    
+    if not chatbot or not chatbot.is_ready():
+        st.error("❌ Chatbot is not ready. Please check the system initialization.")
+        st.info("Make sure you have:")
+        st.write("1. Processed the Constitution data (`python src/data_processor.py --process`)")
+        st.write("2. All required dependencies installed")
+        st.write("3. Sufficient system resources (16GB RAM recommended)")
+        return
+    
+    # Sidebar
+    with st.sidebar:
+        st.image("https://upload.wikimedia.org/wikipedia/commons/f/f9/Flag_of_Bangladesh.svg", width=200)
+        
+        # System status
+        display_system_stats(chatbot)
+        
+        st.markdown("---")
+        
+        # Settings
+        st.subheader("⚙️ Settings")
+        use_llm = st.checkbox("Use Advanced LLM", value=False, 
+                              help="Enable for better responses (slower)")
+        
+        # Clear conversation
+        if st.button("🗑️ Clear Conversation"):
+            st.session_state.messages = []
+            chatbot.clear_conversation_history()
+            st.success("Conversation cleared!")
+        
+        st.markdown("---")
+        
+        # Conversation history
+        display_conversation_history(chatbot)
+    
+    # Main content area
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        # Chat interface
+        st.subheader("💬 Chat with the Constitution")
+        
+        # Display chat messages
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+                if message["role"] == "assistant" and "metadata" in message:
+                    with st.expander("📋 Details"):
+                        st.json(message["metadata"])
+        
+        # Chat input
+        query = st.chat_input("Ask about the Bangladesh Constitution...")
+        
+        # Handle sample query selection
+        if st.session_state.sample_query:
+            query = st.session_state.sample_query
+            st.session_state.sample_query = ""
+        
+        # Process user input
+        if query:
+            # Add user message to chat history
+            st.session_state.messages.append({"role": "user", "content": query})
+            
+            # Display user message
+            with st.chat_message("user"):
+                st.markdown(query)
+            
+            # Process query and display response
+            with st.chat_message("assistant"):
+                with st.spinner("🤔 Thinking..."):
+                    result = chatbot.process_query(query, use_llm=use_llm)
+                
+                # Display response
+                st.markdown(result["answer"])
+                
+                # Add response to chat history with metadata
+                st.session_state.messages.append({
+                    "role": "assistant", 
+                    "content": result["answer"],
+                    "metadata": {
+                        "language": result.get("language", "en"),
+                        "sources": result.get("num_sources", 0),
+                        "processing_time": f"{result.get('processing_time', 0):.2f}s",
+                        "scope": result.get("scope", "unknown")
+                    }
+                })
+                
+                # Show quick stats
+                col_lang, col_sources, col_time = st.columns(3)
+                with col_lang:
+                    st.metric("Language", result.get("language", "en").upper())
+                with col_sources:
+                    st.metric("Sources", result.get("num_sources", 0))
+                with col_time:
+                    st.metric("Time", f"{result.get('processing_time', 0):.2f}s")
+    
+    with col2:
+        # Sample queries
+        display_sample_queries()
+        
+        st.markdown("---")
+        
+        # Information panel
+        st.subheader("ℹ️ About")
+        st.info("""
+        This chatbot provides information about the **Constitution of the People's Republic of Bangladesh** (1972, with amendments up to the 17th Amendment, 2018).
+        
+        **Features:**
+        - 🔍 Accurate constitutional information
+        - 🌐 Bilingual support (English & Bangla)  
+        - 📊 Source citations
+        - ⚡ Fast CPU-based processing
+        """)
+        
+        # Legal disclaimer
+        st.markdown('<div class="disclaimer">', unsafe_allow_html=True)
+        st.warning("""
+        ⚠️ **Legal Disclaimer:**
+        
+        This chatbot provides educational information only and does not constitute legal advice. For legal matters, consult qualified legal professionals.
+        """)
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Footer
+    st.markdown("---")
+    st.markdown("""
+    <div style="text-align: center; color: #6b7280; font-size: 0.9rem;">
+        🏛️ Bangladesh Constitution Chatbot | Built with Streamlit & LangChain | 
+        Data: Constitution of Bangladesh (1972-2018)
+    </div>
+    """, unsafe_allow_html=True)
+
+
+if __name__ == "__main__":
+    main()
