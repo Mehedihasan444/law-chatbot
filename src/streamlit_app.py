@@ -210,8 +210,8 @@ def main():
         
         # Settings
         st.subheader("⚙️ Settings")
-        use_llm = st.checkbox("Use Advanced LLM", value=False, 
-                              help="Enable for better responses (slower)")
+        use_llm = st.checkbox("Use Advanced LLM", value=True, 
+                              help="Enable for better responses (recommended)")
         
         # Clear conversation
         if st.button("🗑️ Clear Conversation"):

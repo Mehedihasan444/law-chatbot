@@ -16,15 +16,15 @@ class Config:
     
     # Model Configuration (CPU-friendly local models)
     EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
-    CPU_LLM_MODEL = os.getenv("CPU_LLM_MODEL", "google/flan-t5-base")
+    CPU_LLM_MODEL = os.getenv("CPU_LLM_MODEL", "google/flan-t5-xl")
     VECTOR_STORE_TYPE = os.getenv("VECTOR_STORE_TYPE", "faiss")
     
-    # Text Processing (Adjusted for CPU-friendly models)
+    # Text Processing (Optimized for flan-t5-xl)
     CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "512"))
     CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "50"))
-    MAX_TOKENS = int(os.getenv("MAX_TOKENS", "400"))
-    TEMPERATURE = float(os.getenv("TEMPERATURE", "0.1"))
-    TOP_K_RETRIEVAL = int(os.getenv("TOP_K_RETRIEVAL", "5"))
+    MAX_TOKENS = int(os.getenv("MAX_TOKENS", "768"))
+    TEMPERATURE = float(os.getenv("TEMPERATURE", "0.2"))
+    TOP_K_RETRIEVAL = int(os.getenv("TOP_K_RETRIEVAL", "3"))
     
     # Language Settings
     DEFAULT_LANGUAGE = "en"
@@ -44,25 +44,35 @@ class Config:
     VECTORSTORE_DIR = os.path.join(PROJECT_ROOT, "vectorstore")
     
     # Prompts
-    SYSTEM_PROMPT = """You are a legal assistant for the Bangladesh Constitution. Answer questions based only on the provided constitutional text.
+    SYSTEM_PROMPT = """You are a knowledgeable legal assistant specializing in the Bangladesh Constitution. Your task is to provide clear, comprehensive, and educational answers about constitutional provisions.
 
-Rules:
-1. Use only the provided constitutional excerpts
-2. Include article citations (e.g., "Article 27")
-3. If information is not in the provided text, say so clearly
-4. Keep answers concise and factual
-5. Add disclaimer about legal advice
+Guidelines:
+1. Provide complete, well-structured explanations in paragraph form
+2. Start with a direct answer to the question
+3. Include relevant article numbers and citations
+4. Explain the significance and practical implications
+5. Use clear, accessible language for general users
+6. Always end with the legal disclaimer
 
-Format: Direct answer + article citation + legal disclaimer."""
+Response Structure:
+- Direct answer paragraph
+- Detailed explanation with context
+- Article citations
+- Legal disclaimer"""
 
-    USER_PROMPT_TEMPLATE = """Context from Bangladesh Constitution:
+    USER_PROMPT_TEMPLATE = """Constitutional Information:
 {context}
 
-Question: {question}
+User Question: {question}
 
-Based on the constitutional text above, provide a clear answer with article numbers. If the information is not sufficient, say so.
+Instructions: Based on the constitutional provisions above, provide a comprehensive answer that:
+1. Directly answers the user's question in clear language
+2. Explains the constitutional provisions in context
+3. Includes specific article references
+4. Explains why these provisions matter
+5. Uses paragraph format, not bullet points
 
-Answer:"""
+Provide a detailed, educational response:"""
 
     DISCLAIMER = """
 ⚠️ **Important Disclaimer**: This information is based on the Constitution of the People's Republic of Bangladesh and is for educational purposes only. This does not constitute legal advice. For legal matters, please consult qualified legal professionals.

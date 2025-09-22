@@ -35,7 +35,7 @@ class ConstitutionRAG:
         
         # Initialize services
         self.embedding_service = EmbeddingService()
-        self.llm_service = LLMService()
+        self.llm_service = LLMService(model_name=self.config.CPU_LLM_MODEL)
         
         self.embeddings = self.embedding_service.get_embeddings()
         self.llm = self.llm_service.get_llm()
@@ -121,14 +121,25 @@ class ConstitutionRAG:
         if not documents:
             return "No relevant information found in the Constitution."
 
-        def _shorten(txt: str, n: int = 400) -> str:
-            t = txt.strip().replace("\n", " ")
-            return t[:n] + ("…" if len(t) > n else "")
+        def _clean_text(txt: str) -> str:
+            """Clean and format text for better readability"""
+            t = txt.strip().replace("\n", " ").replace("  ", " ")
+            return t
 
-        context_parts = [
-            f"Excerpt {i}: {_shorten(doc.page_content)} [Source: {doc.metadata.get('source', 'Bangladesh Constitution')}]"
-            for i, doc in enumerate(documents, 1)
-        ]
+        context_parts = []
+        for i, doc in enumerate(documents, 1):
+            content = _clean_text(doc.page_content)
+            
+            # Extract article info if available
+            article_info = doc.metadata.get('article_number', '')
+            part_info = doc.metadata.get('part', '')
+            
+            if article_info:
+                context_parts.append(f"Article {article_info}: {content}")
+            elif part_info:
+                context_parts.append(f"{part_info}: {content}")
+            else:
+                context_parts.append(f"Constitutional Provision: {content}")
 
         return "\n\n".join(context_parts)
     
@@ -302,29 +313,60 @@ class ConstitutionRAG:
             return self.generate_response_simple(query, context)
         
         try:
-            prompt = f"""You are a legal assistant for the Constitution of Bangladesh. Provide a clear, human-friendly answer.
-IMPORTANT: Do NOT include raw excerpts. Summarize key points in simple language.
-
-Constitutional Information:
-{context}
-
-Question: {query}
-
-Provide a clear, concise answer that:
-1. Directly answers the question.
-2. Uses simple, understandable language.
-3. Cites specific articles (e.g., "Article 141A").
-4. Uses bullet points for clarity.
-5. Does NOT quote raw constitutional text.
-
-Answer:"""
+            # Truncate context to fit within Flan-T5's 512 token limit
+            truncated_context = self._truncate_context_for_llm(context, query)
             
-            response = self.llm(prompt).strip()
+            # Use the improved prompt from config
+            prompt = self.config.USER_PROMPT_TEMPLATE.format(
+                context=truncated_context,
+                question=query
+            )
+            
+            # Use invoke instead of __call__ to fix deprecation warning
+            response = self.llm.invoke(prompt).strip()
             return response + "\n\n" + self.config.DISCLAIMER
             
         except Exception as e:
             print(f"Error generating LLM response: {e}")
             return self.generate_response_simple(query, context)
+    
+    def _truncate_context_for_llm(self, context: str, query: str, max_tokens: int = 400) -> str:
+        """
+        Truncate context to fit within Flan-T5's token limit.
+        Reserves tokens for prompt template and query, keeps context under max_tokens.
+        """
+        if not context:
+            return context
+            
+        # Rough token estimation: 1 token ≈ 4 characters for English text
+        # Reserve tokens for prompt template (~100 tokens) and query
+        reserved_tokens = 100 + len(query.split()) * 1.3  # Conservative estimate
+        available_tokens = max_tokens - reserved_tokens
+        
+        if available_tokens <= 0:
+            return "Constitutional information available but query too long."
+        
+        # Convert tokens to approximate character count
+        max_chars = int(available_tokens * 3.5)  # Conservative character-to-token ratio
+        
+        if len(context) <= max_chars:
+            return context
+            
+        # Smart truncation: try to keep complete sentences/articles
+        sentences = context.split('. ')
+        truncated = ""
+        
+        for sentence in sentences:
+            if len(truncated + sentence + '. ') <= max_chars:
+                truncated += sentence + '. '
+            else:
+                break
+        
+        # If no complete sentences fit, do character truncation
+        if not truncated.strip():
+            truncated = context[:max_chars] + "..."
+        
+        return truncated.strip()
     
     def query(self, question: str, use_llm: bool = False) -> Dict:
         """Main query interface."""

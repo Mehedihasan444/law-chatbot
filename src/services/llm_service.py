@@ -23,11 +23,13 @@ class LLMService:
                 "text2text-generation",
                 model=model,
                 tokenizer=tokenizer,
-                max_new_tokens=400,
-                temperature=0.1,
+                max_new_tokens=768,
+                temperature=0.2,
                 do_sample=True,
-                top_p=0.9,
-                repetition_penalty=1.1
+                top_p=0.95,
+                top_k=50,
+                repetition_penalty=1.1,
+                length_penalty=1.0
             )
             return HuggingFacePipeline(pipeline=pipe)
         except Exception as e:
