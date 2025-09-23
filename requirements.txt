@@ -3,12 +3,20 @@ langchain>=0.2.0
 langchain-openai>=0.1.20
 langchain-community>=0.2.0
 langchain-huggingface>=0.0.3
+langchain-google-genai>=1.0.0
 langchain-text-splitters>=0.0.1
+
+# Google Gemini API
+google-generativeai>=0.7.0
 
 # Vector stores and embeddings
 faiss-cpu==1.7.4
 pinecone-client==3.2.2
 sentence-transformers==2.7.0
+
+# Transformers (for local models as fallback)
+transformers>=4.35.0
+torch>=2.0.0
 
 # PDF processing
 PyPDF2==3.0.1

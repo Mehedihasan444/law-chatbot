@@ -35,7 +35,7 @@ class ConstitutionRAG:
         
         # Initialize services
         self.embedding_service = EmbeddingService()
-        self.llm_service = LLMService(model_name=self.config.CPU_LLM_MODEL)
+        self.llm_service = LLMService(model_name=self.config.LLM_MODEL, config=self.config)
         
         self.embeddings = self.embedding_service.get_embeddings()
         self.llm = self.llm_service.get_llm()
@@ -308,23 +308,38 @@ class ConstitutionRAG:
         return cleaned[:5]
     
     def generate_response_with_llm(self, query: str, context: str) -> str:
-        """Generates a response using the LLM."""
+        """Generates a response using the LLM (Gemini or local model)."""
         if not self.llm:
             return self.generate_response_simple(query, context)
         
         try:
-            # Truncate context to fit within Flan-T5's 512 token limit
-            truncated_context = self._truncate_context_for_llm(context, query)
+            # Check if we're using Gemini (ChatGoogleGenerativeAI) or local model
+            llm_type = getattr(self.llm_service, 'llm_type', 'local')
             
-            # Use the improved prompt from config
-            prompt = self.config.USER_PROMPT_TEMPLATE.format(
-                context=truncated_context,
-                question=query
-            )
+            if llm_type == 'gemini':
+                # For Gemini, we can use longer context
+                prompt = self.config.USER_PROMPT_TEMPLATE.format(
+                    context=context[:8000],  # Gemini can handle more context
+                    question=query
+                )
+                # Use invoke for ChatGoogleGenerativeAI
+                response = self.llm.invoke(prompt)
+                # Extract content from AIMessage response
+                if hasattr(response, 'content'):
+                    response_text = response.content.strip()
+                else:
+                    response_text = str(response).strip()
+            else:
+                # For local models, truncate context to fit within token limits
+                truncated_context = self._truncate_context_for_llm(context, query)
+                prompt = self.config.USER_PROMPT_TEMPLATE.format(
+                    context=truncated_context,
+                    question=query
+                )
+                # Use invoke for HuggingFacePipeline
+                response_text = self.llm.invoke(prompt).strip()
             
-            # Use invoke instead of __call__ to fix deprecation warning
-            response = self.llm.invoke(prompt).strip()
-            return response + "\n\n" + self.config.DISCLAIMER
+            return response_text + "\n\n" + self.config.DISCLAIMER
             
         except Exception as e:
             print(f"Error generating LLM response: {e}")

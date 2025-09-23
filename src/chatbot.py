@@ -5,8 +5,14 @@ Handles conversation flow, language detection, and response generation
 import os
 import sys
 import re
+import warnings
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime
+
+# Suppress warnings
+warnings.filterwarnings("ignore")
+os.environ["GRPC_VERBOSITY"] = "ERROR"
+os.environ["GLOG_minloglevel"] = "2"
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

@@ -6,8 +6,14 @@ import os
 import sys
 import streamlit as st
 import json
+import warnings
 from datetime import datetime, timedelta
 import time
+
+# Suppress warnings
+warnings.filterwarnings("ignore")
+os.environ["GRPC_VERBOSITY"] = "ERROR"
+os.environ["GLOG_minloglevel"] = "2"
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

@@ -4,11 +4,12 @@ A law-based chatbot for Bangladesh using RAG (Retrieval-Augmented Generation) wi
 
 ## Features
 
-- **High Accuracy**: Uses RAG with fine-tuned legal-specialized LLM
+- **High Accuracy**: Uses RAG with Google Gemini API for superior response quality
 - **Bilingual Support**: English and Bangla language support
 - **Constitutional Focus**: Limited to Constitution-based queries for maximum accuracy
 - **Citation Support**: Provides article references and disclaimers
 - **Hybrid Search**: Combines semantic and keyword search for better retrieval
+- **API-based LLM**: Uses Google Gemini for better understanding and generation
 
 ## Project Structure
 
@@ -42,9 +43,15 @@ law chatbot/
    ```
 4. Create a `.env` file with your API keys:
    ```
-   OPENAI_API_KEY=your_openai_key_here
-   PINECONE_API_KEY=your_pinecone_key_here
+   GEMINI_API_KEY=your_gemini_api_key_here
+   LLM_MODEL=gemini-1.5-flash
+   LLM_TYPE=gemini
    ```
+   
+   To get a Gemini API key:
+   - Visit [Google AI Studio](https://aistudio.google.com/app/apikey)
+   - Create a new API key
+   - Copy it to your `.env` file
 
 ## Usage
 

@@ -11,29 +11,38 @@ load_dotenv()
 class Config:
     """Configuration class for the chatbot"""
     
-    # API Keys (Optional - only needed if using API-based models)
+    # API Keys
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
     
-    # Model Configuration (CPU-friendly local models)
+    # Model Configuration
     EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
-    CPU_LLM_MODEL = os.getenv("CPU_LLM_MODEL", "google/flan-t5-xl")
+    LLM_MODEL = os.getenv("LLM_MODEL", "gemini-1.5-flash")  # Changed to Gemini
+    LLM_TYPE = os.getenv("LLM_TYPE", "gemini")  # Options: "gemini", "local", "openai"
     VECTOR_STORE_TYPE = os.getenv("VECTOR_STORE_TYPE", "faiss")
     
-    # Text Processing (Optimized for flan-t5-xl)
+    # Legacy support for local models (if needed)
+    CPU_LLM_MODEL = os.getenv("CPU_LLM_MODEL", "google/flan-t5-xl")
+    
+    # Text Processing (Optimized for Gemini API)
     CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "512"))
     CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "50"))
-    MAX_TOKENS = int(os.getenv("MAX_TOKENS", "768"))
-    TEMPERATURE = float(os.getenv("TEMPERATURE", "0.2"))
-    TOP_K_RETRIEVAL = int(os.getenv("TOP_K_RETRIEVAL", "3"))
+    MAX_TOKENS = int(os.getenv("MAX_TOKENS", "2048"))  # Increased for Gemini's larger context
+    TEMPERATURE = float(os.getenv("TEMPERATURE", "0.1"))  # Lower for more consistent legal responses
+    TOP_K_RETRIEVAL = int(os.getenv("TOP_K_RETRIEVAL", "5"))  # Increased for more context
     
     # Language Settings
     DEFAULT_LANGUAGE = "en"
-    SUPPORTED_LANGUAGES = ["en"]
+    SUPPORTED_LANGUAGES = ["en", "bn"]  # English and Bengali
     
     # Data Sources - Bangladesh Constitution
     CONSTITUTION_EN_URL = os.getenv(
         "CONSTITUTION_EN_URL", 
         "https://constitutionnet.org/sites/default/files/2021-11/Constitution%20of%20Bangladesh%20%28English%29.pdf"
+    )
+    CONSTITUTION_BN_URL = os.getenv(
+        "CONSTITUTION_BN_URL",
+        "https://wipolex-res.wipo.int/edocs/lexdocs/laws/bn/bd/bd025bn.pdf"
     )
     
     # File Paths
@@ -91,9 +100,11 @@ Provide an educational, insightful response that builds genuine understanding:""
         """Validate configuration and return status"""
         status = {
             "embedding_model": cls.EMBEDDING_MODEL,
-            "cpu_llm_model": cls.CPU_LLM_MODEL,
+            "llm_model": cls.LLM_MODEL,
+            "llm_type": cls.LLM_TYPE,
             "vector_store": cls.VECTOR_STORE_TYPE,
             "openai_key_present": bool(cls.OPENAI_API_KEY),
+            "gemini_key_present": bool(cls.GEMINI_API_KEY),
             "data_dirs_exist": all([
                 os.path.exists(cls.DATA_DIR),
                 os.path.exists(cls.RAW_DATA_DIR),

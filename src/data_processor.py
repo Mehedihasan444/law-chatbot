@@ -72,12 +72,16 @@ class ConstitutionProcessor:
             return False
     
     def download_constitution_files(self) -> bool:
-        """Download Constitution file (English only)"""
-        # Download English version only
-        return self.download_file(
+        """Download Constitution files (English and Bengali)"""
+        success_en = self.download_file(
             self.config.CONSTITUTION_EN_URL, 
             "bangladesh_constitution_en.pdf"
         )
+        success_bn = self.download_file(
+            self.config.CONSTITUTION_BN_URL,
+            "bangladesh_constitution_bn.pdf"
+        )
+        return success_en and success_bn
     
     def extract_text_from_pdf(self, pdf_path: str) -> str:
         """Extract text from PDF using multiple methods for best results"""
@@ -108,39 +112,62 @@ class ConstitutionProcessor:
         return text
     
     def clean_text(self, text: str, language: str = "en") -> str:
-        """Clean and normalize extracted text."""
+        """Clean and normalize extracted text for both English and Bengali."""
         if not text.strip():
             return ""
         
-        # General cleanup
+        # General cleanup for both languages
         text = re.sub(r'\[\s*\d+\s*\]', '', text)  # Remove bracketed numbers like [1]
-        text = text.replace("THE CONSTITUTION OF THE PEOPLE'S REPUBLIC OF BANGLADESH", "")
+        
+        if language == "en":
+            # English-specific cleanup
+            text = text.replace("THE CONSTITUTION OF THE PEOPLE'S REPUBLIC OF BANGLADESH", "")
+            text = re.sub(r'Page\s+\d+\s+of\s+\d+', '', text, flags=re.IGNORECASE)
+            text = re.sub(r'^\s*\d+\s*$', '', text, flags=re.MULTILINE)
+            text = text.replace("1[", "").replace("2[", "")  # Common OCR error
+        elif language == "bn":
+            # Bengali-specific cleanup
+            # Remove common Bengali header/footer patterns
+            text = text.replace("গণপ্রজাতন্ত্রী বাংলাদেশের সংবিধান", "")
+            text = re.sub(r'পৃষ্ঠা\s*\d+', '', text)  # Remove page numbers in Bengali
+            text = re.sub(r'^\s*\d+\s*$', '', text, flags=re.MULTILINE)  # Remove lone numbers
         
         # Normalize whitespace and remove excessive newlines
         text = re.sub(r'\s+', ' ', text).strip()
         text = re.sub(r'(\n\s*){2,}', '\n', text)
-
-        # Remove page numbers and headers/footers more robustly
-        text = re.sub(r'Page\s+\d+\s+of\s+\d+', '', text, flags=re.IGNORECASE)
-        text = re.sub(r'^\s*\d+\s*$', '', text, flags=re.MULTILINE) # Remove lines containing only numbers
-
-        # Specific fixes for common OCR errors
-        text = text.replace("1[", "").replace("2[", "") # Common OCR error
         
         return text.strip()
     
     def detect_language(self, text: str) -> str:
-        """Always returns 'en' since we only support English"""
+        """Detect language based on text content and Bengali Unicode characters"""
+        if not text.strip():
+            return 'en'
+        
+        # Check for Bengali Unicode characters (U+0980 to U+09FF)
+        bengali_chars = len([c for c in text if '\u0980' <= c <= '\u09FF'])
+        total_chars = len([c for c in text if c.isalpha()])
+        
+        if total_chars > 0:
+            bengali_ratio = bengali_chars / total_chars
+            # If more than 30% of characters are Bengali, classify as Bengali
+            if bengali_ratio > 0.3:
+                return 'bn'
+        
         return 'en'
     
     def _get_article_pattern(self, language: str) -> str:
-        """Returns the regex pattern for splitting by articles (English only)."""
-        # Matches "PART...", "PREAMBLE", "ARTICLE 1", "SCHEDULE"
-        return r'(?=\bPART\s+[IVXLC]+\b|PREAMBLE|ARTICLE\s+\d+[A-Z]?\b|THE\s+\w+\s+SCHEDULE\b)'
+        """Returns the regex pattern for splitting by articles for both English and Bengali."""
+        if language == 'bn':
+            # Bengali patterns - matches "ধারা ১", "ভাগ ১", "উদ্দেশিকা", etc.
+            return r'(?=\bধারা\s+[০-৯১-৯]+\b|\bভাগ\s+[০-৯১-৯IVXLCivxlc]+\b|\bউদ্দেশিকা\b|\bতফসিল\b)'
+        else:
+            # English patterns - matches "PART...", "PREAMBLE", "ARTICLE 1", "SCHEDULE"
+            return r'(?=\bPART\s+[IVXLC]+\b|PREAMBLE|ARTICLE\s+\d+[A-Z]?\b|THE\s+\w+\s+SCHEDULE\b)'
 
     def hybrid_chunking_strategy(self, text: str, language: str) -> List[Dict]:
         """
         Combines logical (article-based) and semantic (size-based) chunking.
+        Supports both English and Bengali.
         1. Splits the document by major logical boundaries (Parts, Articles).
         2. For each logical section, uses a text splitter to create smaller semantic chunks.
         """
@@ -154,7 +181,7 @@ class ConstitutionProcessor:
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=self.config.CHUNK_SIZE,
             chunk_overlap=self.config.CHUNK_OVERLAP,
-            separators=["\n\n", "\n", ". ", " ", ""]
+            separators=["\n\n", "\n", ". ", " ", ""] if language == 'en' else ["\n\n", "\n", "। ", " ", ""]
         )
 
         current_metadata = {}
@@ -163,18 +190,23 @@ class ConstitutionProcessor:
             if not section.strip():
                 continue
 
-            # Update metadata if the section is a new header (Part, Article, etc.)
-            header_match = re.match(r'(PART\s+[IVXLC]+)|(ARTICLE\s+\d+[A-Z]?)|(PREAMBLE)|(THE\s+\w+\s+SCHEDULE)', section)
+            # Update metadata based on language
+            if language == 'bn':
+                # Bengali header matching
+                header_match = re.match(r'(ভাগ\s+[০-৯১-৯IVXLCivxlc]+)|(ধারা\s+[০-৯১-৯]+[ক-য]?)|(উদ্দেশিকা)|(তফসিল)', section)
+            else:
+                # English header matching
+                header_match = re.match(r'(PART\s+[IVXLC]+)|(ARTICLE\s+\d+[A-Z]?)|(PREAMBLE)|(THE\s+\w+\s+SCHEDULE)', section)
 
             if header_match:
-                if header_match.group(1): # PART
+                if header_match.group(1):  # PART/ভাগ
                     current_metadata['part'] = section.strip()
-                elif header_match.group(2): # ARTICLE
+                elif header_match.group(2):  # ARTICLE/ধারা
                     current_metadata['article'] = section.strip()
-                    current_metadata['article_number'] = self._extract_article_number(section)
-                elif header_match.group(3): # PREAMBLE
-                    current_metadata['part'] = 'PREAMBLE'
-                elif header_match.group(4): # SCHEDULE
+                    current_metadata['article_number'] = self._extract_article_number(section, language)
+                elif header_match.group(3):  # PREAMBLE/উদ্দেশিকা
+                    current_metadata['part'] = 'PREAMBLE' if language == 'en' else 'উদ্দেশিকা'
+                elif header_match.group(4):  # SCHEDULE/তফসিল
                     current_metadata['part'] = section.strip()
 
             # 2. Split the current section into smaller semantic chunks
@@ -184,8 +216,8 @@ class ConstitutionProcessor:
                 chunk_metadata = {
                     'source': 'Bangladesh Constitution',
                     'language': language,
-                    'last_amended': '2018', # This should be ideally configured
-                    **current_metadata  # Inherit metadata from the parent section
+                    'last_amended': '2018',
+                    **current_metadata
                 }
                 
                 all_chunks.append({
@@ -202,63 +234,106 @@ class ConstitutionProcessor:
 
         return all_chunks
 
-    def _extract_article_number(self, article_text: str) -> Optional[str]:
-        """Extract article number from article text"""
-        match = re.search(r'(\d+[A-Z]?)', article_text)
-        if match:
-            return match.group(1)
+    def _extract_article_number(self, article_text: str, language: str = 'en') -> Optional[str]:
+        """Extract article number from article text for both English and Bengali"""
+        if language == 'bn':
+            # Bengali number extraction - matches "ধারা ১২৩" or "ধারা ১২ক"
+            match = re.search(r'ধারা\s+([০-৯১-৯]+[ক-য]?)', article_text)
+            if match:
+                bengali_num = match.group(1)
+                # Convert Bengali numerals to English for consistency
+                bengali_to_english = str.maketrans('০১২৩৪৫৬৭৮৯', '0123456789')
+                return bengali_num.translate(bengali_to_english)
+        else:
+            # English number extraction
+            match = re.search(r'ARTICLE\s+(\d+[A-Z]?)', article_text, re.IGNORECASE)
+            if match:
+                return match.group(1)
         return None
     
     def process_constitution_files(self) -> bool:
-        """Process Constitution file (English only)"""
-        filepath = os.path.join(self.config.RAW_DATA_DIR, "bangladesh_constitution_en.pdf")
+        """Process Constitution files (English and Bengali)"""
+        files_to_process = [
+            ("bangladesh_constitution_en.pdf", "en"),
+            ("bangladesh_constitution_bn.pdf", "bn")
+        ]
         
-        if not os.path.exists(filepath):
-            print(f"File bangladesh_constitution_en.pdf not found. Please run --download first.")
+        all_chunks_combined = []
+        total_chunks = 0
+        
+        for filename, expected_lang in files_to_process:
+            filepath = os.path.join(self.config.RAW_DATA_DIR, filename)
+            
+            if not os.path.exists(filepath):
+                print(f"⚠️ File {filename} not found. Skipping...")
+                continue
+            
+            print(f"📖 Processing {filename}...")
+            
+            # Extract text
+            text = self.extract_text_from_pdf(filepath)
+            if not text.strip():
+                print(f"❌ No text extracted from {filename}")
+                continue
+            
+            # Detect language (should match expected)
+            detected_lang = self.detect_language(text)
+            if detected_lang != expected_lang:
+                print(f"⚠️ Language mismatch in {filename}: expected {expected_lang}, detected {detected_lang}")
+                detected_lang = expected_lang  # Use expected language
+            
+            print(f"🌐 Processing language: {detected_lang}")
+            
+            # Clean text
+            cleaned_text = self.clean_text(text, detected_lang)
+            
+            # Save raw text
+            text_filename = f"constitution_{detected_lang}_raw.txt"
+            with open(os.path.join(self.config.PROCESSED_DATA_DIR, text_filename), 'w', encoding='utf-8') as f:
+                f.write(cleaned_text)
+            
+            # Use the hybrid chunking strategy
+            chunks = self.hybrid_chunking_strategy(cleaned_text, detected_lang)
+            print(f"📄 Created {len(chunks)} chunks for {detected_lang}")
+            
+            # Save language-specific chunks
+            chunks_filename = f"constitution_{detected_lang}_chunks.json"
+            with open(os.path.join(self.config.PROCESSED_DATA_DIR, chunks_filename), 'w', encoding='utf-8') as f:
+                json.dump(chunks, f, indent=2, ensure_ascii=False)
+            
+            # Add to combined chunks
+            all_chunks_combined.extend(chunks)
+            total_chunks += len(chunks)
+        
+        if not all_chunks_combined:
+            print("❌ No chunks created from any file")
             return False
         
-        print(f"Processing bangladesh_constitution_en.pdf...")
-        
-        # Extract text
-        text = self.extract_text_from_pdf(filepath)
-        if not text.strip():
-            print(f"No text extracted from bangladesh_constitution_en.pdf")
-            return False
-        
-        # Clean text
-        cleaned_text = self.clean_text(text, "en")
-        
-        # Language is always English
-        detected_lang = "en"
-        print(f"Processing language: {detected_lang}")
-        
-        # Save raw text
-        text_filename = f"constitution_{detected_lang}_raw.txt"
-        with open(os.path.join(self.config.PROCESSED_DATA_DIR, text_filename), 'w', encoding='utf-8') as f:
-            f.write(cleaned_text)
-        
-        # Use the hybrid chunking strategy
-        chunks = self.hybrid_chunking_strategy(cleaned_text, detected_lang)
-        print(f"Created {len(chunks)} chunks using hybrid strategy.")
-        
-        # Save chunks
-        chunks_filename = f"constitution_{detected_lang}_chunks.json"
-        with open(os.path.join(self.config.PROCESSED_DATA_DIR, chunks_filename), 'w', encoding='utf-8') as f:
-            json.dump(chunks, f, indent=2, ensure_ascii=False)
-        
-        # Save all chunks in standard format
+        # Save all chunks in standard format (both languages combined)
         final_chunks_for_json = [
             {
                 "page_content": chunk['content'],
                 "metadata": chunk['metadata']
-            } for chunk in chunks
+            } for chunk in all_chunks_combined
         ]
 
         with open(os.path.join(self.config.PROCESSED_DATA_DIR, "all_chunks.json"), 'w', encoding='utf-8') as f:
             json.dump(final_chunks_for_json, f, indent=2, ensure_ascii=False)
         
-        print(f"Total chunks created: {len(chunks)}")
-        return len(chunks) > 0
+        print(f"✅ Total chunks created: {total_chunks} (English + Bengali)")
+        
+        # Show language breakdown
+        lang_counts = {}
+        for chunk in all_chunks_combined:
+            lang = chunk['metadata'].get('language', 'unknown')
+            lang_counts[lang] = lang_counts.get(lang, 0) + 1
+        
+        print("📊 Language breakdown:")
+        for lang, count in lang_counts.items():
+            lang_name = "English" if lang == "en" else "Bengali" if lang == "bn" else lang
+            print(f"   {lang_name}: {count} chunks")
+        
+        return total_chunks > 0
     
     def get_processing_stats(self) -> Dict:
         """Get statistics about processed data"""
