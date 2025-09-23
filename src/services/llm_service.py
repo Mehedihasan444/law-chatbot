@@ -23,13 +23,14 @@ class LLMService:
                 "text2text-generation",
                 model=model,
                 tokenizer=tokenizer,
-                max_new_tokens=768,
-                temperature=0.2,
+                max_new_tokens=1024,  # Increased for more comprehensive answers
+                temperature=0.3,      # Slightly higher for more varied, thoughtful responses
                 do_sample=True,
-                top_p=0.95,
-                top_k=50,
-                repetition_penalty=1.1,
-                length_penalty=1.0
+                top_p=0.9,           # More focused sampling for coherent responses
+                top_k=40,            # Reduced for better quality control
+                repetition_penalty=1.15,  # Higher penalty to avoid repetition
+                length_penalty=1.2,  # Encourage longer, more detailed responses
+                early_stopping=False # Allow full development of thoughts
             )
             return HuggingFacePipeline(pipeline=pipe)
         except Exception as e:
