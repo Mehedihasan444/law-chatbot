@@ -17,12 +17,12 @@ class Config:
     
     # Model Configuration
     EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
-    LLM_MODEL = os.getenv("LLM_MODEL", "gemini-1.5-flash")  # Changed to Gemini
+    LLM_MODEL = os.getenv("LLM_MODEL", "gemini-2.0-flash-exp")  # Latest Gemini model
     LLM_TYPE = os.getenv("LLM_TYPE", "gemini")  # Options: "gemini", "local", "openai"
     VECTOR_STORE_TYPE = os.getenv("VECTOR_STORE_TYPE", "faiss")
     
     # Legacy support for local models (if needed)
-    CPU_LLM_MODEL = os.getenv("CPU_LLM_MODEL", "google/flan-t5-xl")
+    CPU_LLM_MODEL = os.getenv("CPU_LLM_MODEL", "google/flan-t5-base")  # Changed to smaller, more stable model
     
     # Text Processing (Optimized for Gemini API)
     CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "512"))

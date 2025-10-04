@@ -31,6 +31,12 @@ spacy==3.7.4
 streamlit==1.32.2
 gradio==4.26.0
 
+# API Framework
+fastapi==0.109.2
+uvicorn[standard]==0.27.1
+pydantic==2.6.1
+python-multipart==0.0.9
+
 # Data handling
 pandas==2.2.2
 numpy==1.26.4
@@ -42,11 +48,16 @@ pyyaml==6.0.1
 
 # Testing and evaluation
 pytest==8.1.1
+pytest-asyncio==0.23.5
+httpx==0.26.0
 ragas==0.1.7
 
 # Utilities
 tqdm==4.66.2
 colorama==0.4.6
+
+# Monitoring and logging
+loguru==0.7.2
 
 # Alternative LLM providers
 openai==1.25.1

@@ -85,10 +85,34 @@ def initialize_chatbot():
         if chatbot.is_ready():
             return chatbot
         else:
-            return None
+            st.warning("⚠️ Chatbot initialization incomplete - some features may not work")
+            return chatbot  # Return even if not fully ready, fallbacks will handle it
     except Exception as e:
         st.error(f"Error initializing chatbot: {e}")
         return None
+
+
+def check_llm_status(chatbot):
+    """Check and display current LLM status with fallback info"""
+    if not chatbot or not chatbot.rag_system:
+        return {"status": "error", "message": "Chatbot not initialized"}
+    
+    try:
+        llm_service = chatbot.rag_system.llm_service
+        model_info = llm_service.get_model_info()
+        
+        # Test connectivity if needed
+        connectivity = model_info.get('connectivity_status', {})
+        
+        return {
+            "status": "ready" if model_info['is_loaded'] else "fallback",
+            "llm_type": model_info.get('llm_type', 'unknown'),
+            "connectivity": connectivity,
+            "model_name": model_info.get('model_name', 'unknown'),
+            "fallback_available": model_info.get('local_model_available', False)
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 
 def display_conversation_history(chatbot):
@@ -110,17 +134,56 @@ def display_conversation_history(chatbot):
 
 def display_system_stats(chatbot):
     """Display system statistics in sidebar"""
+    if not chatbot:
+        st.sidebar.error("❌ System Not Ready")
+        return
+        
     stats = chatbot.get_session_stats()
+    llm_status = check_llm_status(chatbot)
     
     st.sidebar.subheader("📊 System Status")
+    
+    # LLM Status with real-time connectivity
+    connectivity = llm_status.get('connectivity', {})
+    if llm_status["status"] == "ready":
+        if connectivity.get('status') == 'success':
+            st.sidebar.success(f"✅ {llm_status['llm_type'].title()} Model Active")
+        else:
+            st.sidebar.warning(f"⚠️ {llm_status['llm_type'].title()} Model (Connectivity Issues)")
+    elif llm_status["status"] == "fallback":
+        st.sidebar.warning("⚠️ Using Fallback Mode")
+        if llm_status.get('fallback_available'):
+            st.sidebar.info("🏠 Local model available as backup")
+        else:
+            st.sidebar.info("📝 Simple responses only")
+    else:
+        st.sidebar.error("❌ LLM Issues Detected")
+    
+    # Network status indicator
+    if connectivity.get('status') == 'network_error':
+        st.sidebar.error("🌐 Network Issues - Using Fallbacks")
+    elif connectivity.get('status') == 'success':
+        st.sidebar.success("🌐 Network Connected")
     
     # System readiness
     if chatbot.is_ready():
         st.sidebar.success("✅ System Ready")
     else:
-        st.sidebar.error("❌ System Not Ready")
+        st.sidebar.warning("⚠️ Limited Functionality")
     
-    # Session stats
+    # Stats
+    with st.sidebar.expander("📈 Session Statistics"):
+        st.write(f"**Queries Processed:** {stats.get('queries_processed', 0)}")
+        st.write(f"**Languages Used:** {', '.join(stats.get('languages_detected', [])) if stats.get('languages_detected') else 'None'}")
+        st.write(f"**Session Duration:** {stats.get('session_duration_minutes', 0):.1f} minutes")
+        st.write(f"**System Status:** {'Active' if chatbot.rag_system else 'Error'}")
+        
+        # LLM Details
+        if llm_status["status"] != "error":
+            st.write(f"**Current Model:** {llm_status.get('model_name', 'Unknown')}")
+            st.write(f"**Model Type:** {llm_status.get('llm_type', 'Unknown')}")
+    
+    # Session stats - moved outside expander for better visibility
     col1, col2 = st.sidebar.columns(2)
     with col1:
         st.metric("Queries", stats.get('queries_processed', 0))
@@ -142,7 +205,7 @@ def display_system_stats(chatbot):
     
     # Languages detected
     if stats.get('languages_detected'):
-        langs = ', '.join(stats['languages_detected'])
+        langs = ', '.join(stats.get('languages_detected', []))
         st.sidebar.info(f"🌐 Languages: {langs}")
 
 
@@ -165,6 +228,8 @@ def display_sample_queries():
         for query in sample_queries_en:
             if st.button(query, key=f"en_{query}"):
                 st.session_state.sample_query = query
+                st.session_state.trigger_query = True
+                st.rerun()
     
     with col2:
         st.markdown("**বাংলা উদাহরণ:**")
@@ -173,12 +238,14 @@ def display_sample_queries():
             "বাংলাদেশের সংবিধানে মৌলিক অধিকারগুলো কী কী?",
             "প্রধানমন্ত্রীর ভূমিকা কী?",
             "কীভাবে সংবিধান সংশোধন করা যায়?",
-            "বাক স্বাধীনতা সম্পর্কে সংবিধানে কী বলা হয়েছে?"
+            "বাক স্વাধীনতা সম্পর্কে সংবিধানে কী বলা হয়েছে?"
         ]
         
         for query in sample_queries_bn:
             if st.button(query, key=f"bn_{query}"):
                 st.session_state.sample_query = query
+                st.session_state.trigger_query = True
+                st.rerun()
 
 
 def main():
@@ -189,6 +256,8 @@ def main():
         st.session_state.messages = []
     if "sample_query" not in st.session_state:
         st.session_state.sample_query = ""
+    if "trigger_query" not in st.session_state:
+        st.session_state.trigger_query = False
     
     # Header
     st.markdown('<div class="main-header">🏛️ Bangladesh Constitution Chatbot</div>', unsafe_allow_html=True)
@@ -197,13 +266,18 @@ def main():
     # Initialize chatbot
     chatbot = initialize_chatbot()
     
-    if not chatbot or not chatbot.is_ready():
-        st.error("❌ Chatbot is not ready. Please check the system initialization.")
+    if not chatbot:
+        st.error("❌ Chatbot failed to initialize. Please check the system configuration.")
         st.info("Make sure you have:")
         st.write("1. Processed the Constitution data (`python src/data_processor.py --process`)")
         st.write("2. All required dependencies installed")
         st.write("3. Sufficient system resources (16GB RAM recommended)")
         return
+    
+    # Allow operation even if not fully ready - fallback mode will handle it
+    if not chatbot.is_ready():
+        st.warning("⚠️ System running in limited mode. Some features may not be available.")
+        st.info("The chatbot will use fallback mechanisms to answer your questions.")
     
     # Sidebar
     with st.sidebar:
@@ -218,6 +292,11 @@ def main():
         st.subheader("⚙️ Settings")
         use_llm = st.checkbox("Use Advanced LLM", value=True, 
                               help="Enable for better responses (recommended)")
+        
+        # Test fallback mechanism
+        if st.button("🧪 Test Fallback", help="Test the fallback mechanism"):
+            test_result = check_llm_status(chatbot)
+            st.json(test_result)
         
         # Clear conversation
         if st.button("🗑️ Clear Conversation"):
@@ -248,10 +327,11 @@ def main():
         # Chat input
         query = st.chat_input("Ask about the Bangladesh Constitution...")
         
-        # Handle sample query selection
-        if st.session_state.sample_query:
+        # Handle sample query selection (triggered by button clicks)
+        if st.session_state.trigger_query and st.session_state.sample_query:
             query = st.session_state.sample_query
             st.session_state.sample_query = ""
+            st.session_state.trigger_query = False
         
         # Process user input
         if query:
@@ -264,11 +344,38 @@ def main():
             
             # Process query and display response
             with st.chat_message("assistant"):
-                with st.spinner("🤔 Thinking..."):
-                    result = chatbot.process_query(query, use_llm=use_llm)
-                
-                # Display response
-                st.markdown(result["answer"])
+                with st.spinner("🤔 Processing your question..."):
+                    try:
+                        result = chatbot.process_query(query, use_llm=use_llm)
+                        
+                        # Check if fallback was used
+                        if result.get('fallback_used', False):
+                            st.warning("⚠️ Using fallback mode - response quality may be limited")
+                        
+                        # Check for network issues and suggest solutions
+                        if "error" in result and any(keyword in str(result.get('error', '')).lower() for keyword in ['nameresolutionerror', 'getaddrinfo failed', 'max retries exceeded']):
+                            st.error("🌐 Network connectivity issues detected")
+                            st.info("💡 Try: Check your internet connection, or the system will use offline responses")
+                        
+                        # Display response
+                        st.markdown(result["answer"])
+                        
+                        # Show additional info if there were issues
+                        if "error" in result and result.get("scope") != "error":
+                            with st.expander("⚠️ Technical Details"):
+                                st.error(f"Issue encountered: {result['error']}")
+                                st.info("The system used fallback mechanisms to provide a response.")
+                        
+                    except Exception as e:
+                        st.error(f"❌ Critical error: {str(e)}")
+                        st.info("💡 Try asking a simpler question or check your internet connection")
+                        result = {
+                            "answer": f"I encountered a critical error. Please try again or ask a different question.",
+                            "language": "en",
+                            "num_sources": 0,
+                            "processing_time": 0,
+                            "scope": "error"
+                        }
                 
                 # Add response to chat history with metadata
                 st.session_state.messages.append({
@@ -278,7 +385,8 @@ def main():
                         "language": result.get("language", "en"),
                         "sources": result.get("num_sources", 0),
                         "processing_time": f"{result.get('processing_time', 0):.2f}s",
-                        "scope": result.get("scope", "unknown")
+                        "scope": result.get("scope", "constitutional"),
+                        "fallback_used": result.get("fallback_used", False)
                     }
                 })
                 

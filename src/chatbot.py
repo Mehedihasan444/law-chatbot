@@ -200,7 +200,7 @@ Please ask questions related to the Constitution of Bangladesh.""" + "\n\n" + se
                 if not self.rag_system:
                     raise Exception("RAG system not initialized")
                 
-                rag_result = self.rag_system.query(processed_query, use_llm=use_llm)
+                rag_result = self.rag_system.query(processed_query, use_llm=use_llm, language=language)
                 
                 processing_time = (datetime.now() - start_time).total_seconds()
                 
@@ -254,16 +254,24 @@ Please ask questions related to the Constitution of Bangladesh.""" + "\n\n" + se
         current_time = datetime.now()
         session_duration = current_time - self.session_stats["session_start"]
         
+        # Convert set to list for JSON serialization
+        languages_list = list(self.session_stats.get("languages_detected", set()))
+        
         stats = {
-            **self.session_stats,
+            "queries_processed": self.session_stats.get("queries_processed", 0),
+            "session_start": self.session_stats.get("session_start"),
+            "languages_detected": languages_list,
             "session_duration_minutes": round(session_duration.total_seconds() / 60, 1),
             "average_query_time": None,
             "system_status": "active" if self.rag_system else "error"
         }
         
         if self.rag_system:
-            rag_stats = self.rag_system.get_stats()
-            stats.update(rag_stats)
+            try:
+                rag_stats = self.rag_system.get_stats()
+                stats.update(rag_stats)
+            except Exception as e:
+                print(f"Warning: Could not get RAG stats: {e}")
         
         return stats
     
