@@ -20,7 +20,7 @@ def generate_response_time_distribution():
     """Figure 6: Response Time Distribution"""
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
     
-    # Gemini API response times
+    # Gemini-2.0-Flash-Exp response times
     np.random.seed(42)
     gemini_times = np.random.gamma(2, 1.2, 1000) + 1.5  # Realistic distribution
     
@@ -31,7 +31,7 @@ def generate_response_time_distribution():
                 label=f'Median: {np.median(gemini_times):.2f}s')
     ax1.set_xlabel('Response Time (seconds)', fontsize=11)
     ax1.set_ylabel('Frequency', fontsize=11)
-    ax1.set_title('Gemini API Response Time Distribution', fontsize=12, fontweight='bold')
+    ax1.set_title('Gemini-2.0-Flash-Exp Response Time Distribution', fontsize=12, fontweight='bold')
     ax1.legend(fontsize=10)
     ax1.grid(axis='y', alpha=0.3)
     
@@ -67,7 +67,7 @@ def generate_component_latency_breakdown():
     x = np.arange(len(components))
     width = 0.35
     
-    bars1 = ax.bar(x - width/2, gemini_latencies, width, label='Gemini API',
+    bars1 = ax.bar(x - width/2, gemini_latencies, width, label='Gemini-2.0-Flash-Exp',
                    color='#4CAF50', alpha=0.8, edgecolor='black')
     bars2 = ax.bar(x + width/2, local_latencies, width, label='FLAN-T5 Local',
                    color='#FF9800', alpha=0.8, edgecolor='black')
@@ -251,7 +251,7 @@ def generate_system_resource_utilization():
     x = np.arange(len(memory_components))
     width = 0.35
     
-    bars1 = ax2.bar(x - width/2, memory_gemini, width, label='Gemini API',
+    bars1 = ax2.bar(x - width/2, memory_gemini, width, label='Gemini-2.0-Flash-Exp',
                    color='#4CAF50', alpha=0.8, edgecolor='black')
     bars2 = ax2.bar(x + width/2, memory_local, width, label='FLAN-T5 Local',
                    color='#FF9800', alpha=0.8, edgecolor='black')

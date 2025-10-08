@@ -104,7 +104,7 @@ def generate_rag_pipeline_detailed():
                           edgecolor='#C73E1D', facecolor='#FFF0E8', linewidth=2)
     ax.add_patch(rect)
     ax.text(9.5, 5.5, 'LLM Processing', ha='center', fontsize=9, fontweight='bold')
-    ax.text(9.5, 5.1, 'Gemini API (Primary)\n+ FLAN-T5 (Fallback)',
+    ax.text(9.5, 5.1, 'Gemini-2.0-Flash-Exp (Primary)\n+ FLAN-T5 (Fallback)',
             ha='center', va='center', fontsize=8)
     ax.text(9.5, 4.7, 'Prompt: System + Context + Query',
             ha='center', va='center', fontsize=8, style='italic')

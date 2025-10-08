@@ -28,7 +28,7 @@ def generate_model_comparison():
     x = np.arange(len(metrics))
     width = 0.35
     
-    bars1 = ax1.bar(x - width/2, gemini_scores, width, label='Gemini API',
+    bars1 = ax1.bar(x - width/2, gemini_scores, width, label='Gemini-2.0-Flash-Exp',
                    color='#4CAF50', alpha=0.8, edgecolor='black', linewidth=1.5)
     bars2 = ax1.bar(x + width/2, flan_scores, width, label='FLAN-T5 Local',
                    color='#FF9800', alpha=0.8, edgecolor='black', linewidth=1.5)
@@ -59,7 +59,7 @@ def generate_model_comparison():
     flan_norm = [5.8/10, 10/30, 2.7/3, 15.5/20, 0.0/0.2]
     
     x2 = np.arange(len(perf_metrics))
-    bars1 = ax2.bar(x2 - width/2, gemini_norm, width, label='Gemini API',
+    bars1 = ax2.bar(x2 - width/2, gemini_norm, width, label='Gemini-2.0-Flash-Exp',
                    color='#4CAF50', alpha=0.8, edgecolor='black', linewidth=1.5)
     bars2 = ax2.bar(x2 + width/2, flan_norm, width, label='FLAN-T5 Local',
                    color='#FF9800', alpha=0.8, edgecolor='black', linewidth=1.5)
@@ -94,7 +94,7 @@ def generate_model_comparison():
     flan_lang = [82, 76, 71, 65, 58]
     
     x3 = np.arange(len(languages))
-    bars1 = ax3.bar(x3 - width/2, gemini_lang, width, label='Gemini API',
+    bars1 = ax3.bar(x3 - width/2, gemini_lang, width, label='Gemini-2.0-Flash-Exp',
                    color='#4CAF50', alpha=0.8, edgecolor='black', linewidth=1.5)
     bars2 = ax3.bar(x3 + width/2, flan_lang, width, label='FLAN-T5 Local',
                    color='#FF9800', alpha=0.8, edgecolor='black', linewidth=1.5)
@@ -113,7 +113,7 @@ def generate_model_comparison():
     flan_overall = [75, 65, 100, 88, 75]
     
     x4 = np.arange(len(categories))
-    bars1 = ax4.barh(x4, gemini_overall, height=width, label='Gemini API',
+    bars1 = ax4.barh(x4, gemini_overall, height=width, label='Gemini-2.0-Flash-Exp',
                     color='#4CAF50', alpha=0.8, edgecolor='black', linewidth=1.5)
     bars2 = ax4.barh(x4 + width, flan_overall, height=width, label='FLAN-T5 Local',
                     color='#FF9800', alpha=0.8, edgecolor='black', linewidth=1.5)
@@ -133,7 +133,7 @@ def generate_model_comparison():
     ax4.set_xlim(0, 110)
     ax4.grid(axis='x', alpha=0.3)
     
-    plt.suptitle('Gemini API vs FLAN-T5 Local Model: Comprehensive Comparison',
+    plt.suptitle('Gemini-2.0-Flash-Exp vs FLAN-T5 Local Model: Comprehensive Comparison',
                  fontsize=14, fontweight='bold', y=0.995)
     save_fig(fig, 'fig15_model_comparison')
 
