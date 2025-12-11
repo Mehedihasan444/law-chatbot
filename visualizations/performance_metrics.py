@@ -18,7 +18,7 @@ def save_fig(fig, name):
 
 def generate_response_time_distribution():
     """Figure 6: Response Time Distribution"""
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5), constrained_layout=True)
     
     # Gemini-2.0-Flash-Exp response times
     np.random.seed(42)
@@ -49,13 +49,13 @@ def generate_response_time_distribution():
     ax2.legend(fontsize=10)
     ax2.grid(axis='y', alpha=0.3)
     
-    plt.suptitle('Response Time Distribution Comparison', fontsize=14, fontweight='bold', y=1.02)
+    plt.suptitle('Response Time Distribution Comparison', fontsize=14, fontweight='bold', y=0.98)
     save_fig(fig, 'fig6_response_time_distribution')
 
 
 def generate_component_latency_breakdown():
     """Figure 7: Latency Breakdown by Component"""
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(10, 6), constrained_layout=True)
     
     components = ['Language\nDetection', 'Query\nEmbedding', 'Vector\nSearch',
                   'Context\nRetrieval', 'LLM\nGeneration', 'Response\nFormatting']
@@ -88,6 +88,8 @@ def generate_component_latency_breakdown():
     ax.legend(fontsize=11, loc='upper left')
     ax.grid(axis='y', alpha=0.3)
     ax.set_yscale('log')  # Log scale due to large LLM difference
+    # Add top/bottom margins so value labels aren't clipped
+    ax.margins(y=0.15)
     
     # Add total time annotation
     total_gemini = sum(gemini_latencies)
@@ -101,7 +103,7 @@ def generate_component_latency_breakdown():
 
 def generate_retrieval_effectiveness():
     """Figure 8: Retrieval Effectiveness Metrics"""
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(12, 10))
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(12, 10), constrained_layout=True)
     
     # Precision at K
     k_values = [1, 3, 5, 7, 10]
@@ -175,13 +177,13 @@ def generate_retrieval_effectiveness():
     ax4.set_ylim(0, 1.0)
     ax4.grid(axis='y', alpha=0.3)
     
-    plt.suptitle('Retrieval Effectiveness Metrics', fontsize=14, fontweight='bold', y=1.00)
+    plt.suptitle('Retrieval Effectiveness Metrics', fontsize=14, fontweight='bold', y=0.98)
     save_fig(fig, 'fig8_retrieval_effectiveness')
 
 
 def generate_token_usage_analysis():
     """Figure 9: Token Usage Analysis"""
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5), constrained_layout=True)
     
     # Token distribution by component
     components = ['Query', 'System\nPrompt', 'Retrieved\nContext', 'Response', 'Total']
@@ -198,6 +200,8 @@ def generate_token_usage_analysis():
     ax1.set_xlabel('Average Token Count', fontsize=12, fontweight='bold')
     ax1.set_title('Token Distribution by Component', fontsize=12, fontweight='bold')
     ax1.grid(axis='x', alpha=0.3)
+    # Ensure space for right-side value labels
+    ax1.set_xlim(0, max(tokens_avg) * 1.2)
     
     # Token usage over time (cumulative)
     queries = np.arange(1, 101)
@@ -217,13 +221,13 @@ def generate_token_usage_analysis():
             transform=ax2.transAxes, fontsize=10, verticalalignment='bottom',
             horizontalalignment='right', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8))
     
-    plt.suptitle('Token Usage Analysis', fontsize=14, fontweight='bold', y=1.00)
+    plt.suptitle('Token Usage Analysis', fontsize=14, fontweight='bold', y=0.98)
     save_fig(fig, 'fig9_token_usage')
 
 
 def generate_system_resource_utilization():
     """Figure 10: System Resource Utilization"""
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(12, 10))
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(12, 10), constrained_layout=True)
     
     # CPU Usage
     time_points = np.arange(0, 60, 1)
@@ -280,6 +284,8 @@ def generate_system_resource_utilization():
     ax3.set_ylabel('I/O Rate (MB/s)', fontsize=11)
     ax3.set_title('Disk I/O Operations', fontsize=12, fontweight='bold')
     ax3.grid(axis='y', alpha=0.3)
+    # Add headroom to avoid clipping the value labels above bars
+    ax3.set_ylim(0, max(io_operations) * 1.25)
     
     # GPU Usage (if applicable)
     gpu_scenarios = ['Embedding\nOnly', 'Local LLM\n(CPU)', 'Local LLM\n(GPU)']
@@ -304,7 +310,7 @@ def generate_system_resource_utilization():
     ax4.set_ylim(0, 100)
     ax4.grid(axis='y', alpha=0.3)
     
-    plt.suptitle('System Resource Utilization', fontsize=14, fontweight='bold', y=1.00)
+    plt.suptitle('System Resource Utilization', fontsize=14, fontweight='bold', y=0.98)
     save_fig(fig, 'fig10_system_resources')
 
 

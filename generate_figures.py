@@ -45,7 +45,6 @@ def main():
     from visualizations import performance_metrics
     from visualizations import data_analysis
     from visualizations import comparison_charts
-    from visualizations import deployment_diagrams
     
     # Generate all figures
     print("\n📊 Generating System Architecture Diagrams...")
@@ -62,9 +61,6 @@ def main():
     
     print("\n📊 Generating Comparison Charts...")
     comparison_charts.generate_all()
-    
-    print("\n📊 Generating Deployment Diagrams...")
-    deployment_diagrams.generate_all()
     
     print("\n" + "=" * 60)
     print(f"✅ All figures saved to: {OUTPUT_DIR.absolute()}")

@@ -20,7 +20,7 @@ def save_fig(fig, name):
 
 def generate_rag_pipeline_detailed():
     """Figure 3: Detailed RAG Pipeline Flow"""
-    fig, ax = plt.subplots(figsize=(14, 10))
+    fig, ax = plt.subplots(figsize=(14, 10), constrained_layout=True)
     ax.set_xlim(0, 14)
     ax.set_ylim(0, 12)
     ax.axis('off')
@@ -96,12 +96,12 @@ def generate_rag_pipeline_detailed():
     
     arrow = FancyArrowPatch((10, 7.5), (5.5, 6), arrowstyle='->', 
                            color='black', linewidth=2, mutation_scale=20)
-    ax.add_patch(arrow)
-    
-    # Phase 5: LLM Generation
-    ax.text(9, 6.2, 'Phase 5: Generation', fontsize=10, fontweight='bold', color='#C73E1D')
-    rect = FancyBboxPatch((7, 4.5), 5, 1.5, boxstyle="round,pad=0.1",
-                          edgecolor='#C73E1D', facecolor='#FFF0E8', linewidth=2)
+    stats_text = '''Model Size: 80 MB
+Parameters: 22.7M
+Max Sequence: 512 tokens
+Avg. Inference: ~50ms
+Languages: 100+'''
+    ax.text(2.75, 1.3, stats_text, ha='center', va='center', fontsize=8, family='monospace')
     ax.add_patch(rect)
     ax.text(9.5, 5.5, 'LLM Processing', ha='center', fontsize=9, fontweight='bold')
     ax.text(9.5, 5.1, 'Gemini-2.0-Flash-Exp (Primary)\n+ FLAN-T5 (Fallback)',
@@ -146,7 +146,7 @@ def generate_rag_pipeline_detailed():
 
 def generate_embedding_process():
     """Figure 4: Embedding Generation Process"""
-    fig, ax = plt.subplots(figsize=(12, 6))
+    fig, ax = plt.subplots(figsize=(12, 6), constrained_layout=True)
     ax.set_xlim(0, 12)
     ax.set_ylim(0, 6)
     ax.axis('off')
@@ -220,7 +220,7 @@ Languages: 100+'''
 
 def generate_retrieval_mechanism():
     """Figure 5: Hybrid Retrieval Mechanism"""
-    fig, ax = plt.subplots(figsize=(12, 8))
+    fig, ax = plt.subplots(figsize=(12, 8), constrained_layout=True)
     ax.set_xlim(0, 12)
     ax.set_ylim(0, 10)
     ax.axis('off')

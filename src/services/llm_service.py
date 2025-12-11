@@ -106,7 +106,7 @@ class LLMService:
                 max_output_tokens=self.config.MAX_TOKENS,
                 convert_system_message_to_human=True,
                 # Reasonable timeout settings
-                request_timeout=30,      # 30 seconds timeout
+                request_timeout=60,      # 60 seconds timeout
                 max_retries=2,           # 2 retries
                 transport="rest",        # Use REST for better timeout control
             )
@@ -147,7 +147,19 @@ class LLMService:
                 raise Exception(f"Connectivity test failed: {error_msg}")
                 
         except Exception as e:
-            print(f"❌ Error loading Gemini model: {e}")
+            error_str = str(e)
+            # Extract main error message (first line only)
+            main_error = error_str.split('\n')[0] if '\n' in error_str else error_str
+            # Truncate if too long
+            if len(main_error) > 200:
+                main_error = main_error[:200] + "..."
+            
+            print(f"❌ Error loading Gemini model: {main_error}")
+            
+            # Give user-friendly message for quota errors
+            if "429" in error_str or "quota" in error_str.lower():
+                print("💡 Quota exceeded - wait 24 hours or use different account")
+            
             print("🔄 Will attempt fallback to local model...")
             return None
 

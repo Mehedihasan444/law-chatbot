@@ -1,0 +1,21 @@
+query,latency,model_type,batch_size,use_llm
+What are the fundamental rights in Bangladesh Constitution?,6.607001543045044,gemini,1,True
+Explain Article 7 of the Constitution,2.979830026626587,local,1,True
+What is the structure of Parliament?,7.189676284790039,gemini,1,True
+Tell me about the Prime Minister powers,4.351943492889404,gemini,1,True
+What are directive principles of state policy?,4.509700298309326,gemini,1,True
+Explain judicial independence in Bangladesh,0.021096467971801758,simple,1,True
+What is Article 27 about?,1.6087236404418945,local,1,True
+How can the constitution be amended?,2.7150869369506836,local,1,True
+What are the emergency provisions?,0.003000497817993164,simple,1,True
+Describe the election process,0.004018068313598633,simple,1,True
+সংবিধানের মৌলিক অধিকার কি কি?,1.6521732807159424,local,1,True
+অনুচ্ছেদ ৭ সম্পর্কে বলুন,1.8230657577514648,local,1,True
+সংসদের গঠন কি?,1.7272233963012695,local,1,True
+প্রধানমন্ত্রীর ক্ষমতা কি?,1.6706156730651855,local,1,True
+রাষ্ট্র পরিচালনার মূলনীতি কি?,0.0010027885437011719,simple,1,True
+What is অনুচ্ছেদ ৭?,1.6668415069580078,local,1,True
+Fundamental rights সম্পর্কে বলুন,1.6412208080291748,local,1,True
+Article 7,0.1873795986175537,simple,1,False
+Fundamental rights,0.038190603256225586,simple,1,False
+Prime Minister,0.020688533782958984,simple,1,False

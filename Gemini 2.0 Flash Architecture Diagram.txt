@@ -1,0 +1,282 @@
+<svg viewBox="0 0 1800 1100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Define gradients and styles -->
+  <defs>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#E3F2FD;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#90CAF9;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#F3E5F5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#CE93D8;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#E8F5E9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#A5D6A7;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="yellowGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFF9C4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFD54F;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFE0B2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFB74D;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="redGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFEBEE;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#EF9A9A;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+    </filter>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#424242" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="900" y="40" font-family="Arial, sans-serif" font-size="28" font-weight="bold" text-anchor="middle" fill="#1a237e">
+    Gemini 2.0 Flash Architecture
+  </text>
+  <text x="900" y="65" font-family="Arial, sans-serif" font-size="18" text-anchor="middle" fill="#5c6bc0">
+    Multimodal Native Transformer
+  </text>
+
+  <!-- Left Column: Input Pipeline -->
+  <g id="input-pipeline">
+    <!-- Input Box -->
+    <rect x="50" y="120" width="220" height="110" rx="12" fill="url(#blueGrad)" stroke="#1976D2" stroke-width="2.5" filter="url(#shadow)"/>
+    <text x="160" y="150" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#0d47a1">Multimodal Input</text>
+    <line x1="70" y1="160" x2="250" y2="160" stroke="#1976D2" stroke-width="1"/>
+    <text x="160" y="180" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#1565C0">• Text</text>
+    <text x="160" y="198" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#1565C0">• Images</text>
+    <text x="160" y="216" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#1565C0">• Audio / Video / Code</text>
+
+    <!-- Arrow -->
+    <line x1="160" y1="230" x2="160" y2="260" stroke="#424242" stroke-width="3" marker-end="url(#arrowhead)"/>
+
+    <!-- Tokenization -->
+    <rect x="50" y="270" width="220" height="90" rx="12" fill="url(#purpleGrad)" stroke="#7B1FA2" stroke-width="2.5" filter="url(#shadow)"/>
+    <text x="160" y="300" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#4A148C">Native Multimodal</text>
+    <text x="160" y="320" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#4A148C">Tokenization</text>
+    <line x1="70" y1="330" x2="250" y2="330" stroke="#7B1FA2" stroke-width="1"/>
+    <text x="160" y="350" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#6A1B9A">Unified Token Space</text>
+
+    <!-- Arrow -->
+    <line x1="160" y1="360" x2="160" y2="390" stroke="#424242" stroke-width="3" marker-end="url(#arrowhead)"/>
+
+    <!-- Positional Encoding -->
+    <rect x="50" y="400" width="220" height="70" rx="12" fill="url(#yellowGrad)" stroke="#F57C00" stroke-width="2.5" filter="url(#shadow)"/>
+    <text x="160" y="430" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#E65100">Positional</text>
+    <text x="160" y="450" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#E65100">Encoding</text>
+
+    <!-- Arrow to transformer -->
+    <line x1="270" y1="300" x2="330" y2="300" stroke="#424242" stroke-width="3" marker-end="url(#arrowhead)"/>
+  </g>
+
+  <!-- Transformer Blocks Container -->
+  <rect x="340" y="110" width="1020" height="600" rx="15" fill="none" stroke="#757575" stroke-width="3" stroke-dasharray="10,5"/>
+  <text x="850" y="145" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#424242">
+    Transformer Blocks (N Layers)
+  </text>
+
+  <!-- Transformer Block 1 -->
+  <g id="block-1">
+    <rect x="365" y="165" width="280" height="535" rx="12" fill="white" stroke="#616161" stroke-width="2.5" filter="url(#shadow)"/>
+    <text x="505" y="195" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#212121">Transformer Block 1</text>
+    
+    <!-- Layer Norm 1 -->
+    <rect x="390" y="215" width="230" height="50" rx="8" fill="url(#blueGrad)" stroke="#1976D2" stroke-width="2"/>
+    <text x="505" y="245" font-family="Arial, sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="#0d47a1">Layer Normalization</text>
+    
+    <!-- Multi-Head Attention -->
+    <rect x="390" y="280" width="230" height="115" rx="8" fill="url(#purpleGrad)" stroke="#7B1FA2" stroke-width="2"/>
+    <text x="505" y="305" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#4A148C">Multi-Head Attention</text>
+    <line x1="400" y1="315" x2="610" y2="315" stroke="#7B1FA2" stroke-width="1"/>
+    <text x="505" y="333" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#6A1B9A">Query, Key, Value</text>
+    <text x="505" y="350" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#6A1B9A">Causal Masking</text>
+    <text x="505" y="367" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#6A1B9A">Cross-Modal Integration</text>
+    <text x="505" y="384" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#6A1B9A">Self-Attention Mechanism</text>
+    
+    <!-- Add & Norm -->
+    <ellipse cx="505" cy="430" rx="70" ry="28" fill="url(#greenGrad)" stroke="#388E3C" stroke-width="2"/>
+    <text x="505" y="435" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#1B5E20">Add &amp; Norm</text>
+    
+    <!-- Layer Norm 2 -->
+    <rect x="390" y="470" width="230" height="50" rx="8" fill="url(#blueGrad)" stroke="#1976D2" stroke-width="2"/>
+    <text x="505" y="500" font-family="Arial, sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="#0d47a1">Layer Normalization</text>
+    
+    <!-- MoE FFN -->
+    <rect x="390" y="530" width="230" height="90" rx="8" fill="url(#orangeGrad)" stroke="#F57C00" stroke-width="2"/>
+    <text x="505" y="548" font-family="Arial, sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="#E65100">Mixture of Experts</text>
+    <text x="505" y="565" font-family="Arial, sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="#E65100">(MoE) FFN</text>
+    <line x1="400" y1="573" x2="610" y2="573" stroke="#F57C00" stroke-width="1"/>
+    <text x="505" y="590" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#BF360C">Router + Expert Networks</text>
+    <text x="505" y="605" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#BF360C">Sparse Activation</text>
+    
+    <!-- Add & Norm 2 -->
+    <ellipse cx="505" cy="660" rx="70" ry="28" fill="url(#greenGrad)" stroke="#388E3C" stroke-width="2"/>
+    <text x="505" y="665" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#1B5E20">Add &amp; Norm</text>
+  </g>
+
+  <!-- Transformer Block 2 -->
+  <g id="block-2">
+    <rect x="680" y="165" width="280" height="535" rx="12" fill="white" stroke="#616161" stroke-width="2.5" filter="url(#shadow)"/>
+    <text x="820" y="195" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#212121">Transformer Block 2</text>
+    
+    <rect x="705" y="215" width="230" height="50" rx="8" fill="url(#blueGrad)" stroke="#1976D2" stroke-width="2"/>
+    <text x="820" y="245" font-family="Arial, sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="#0d47a1">Layer Normalization</text>
+    
+    <rect x="705" y="280" width="230" height="115" rx="8" fill="url(#purpleGrad)" stroke="#7B1FA2" stroke-width="2"/>
+    <text x="820" y="305" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#4A148C">Multi-Head Attention</text>
+    <line x1="715" y1="315" x2="925" y2="315" stroke="#7B1FA2" stroke-width="1"/>
+    <text x="820" y="340" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#6A1B9A">with Cross-Modal</text>
+    <text x="820" y="360" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#6A1B9A">Processing Capabilities</text>
+    
+    <ellipse cx="820" cy="430" rx="70" ry="28" fill="url(#greenGrad)" stroke="#388E3C" stroke-width="2"/>
+    <text x="820" y="435" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#1B5E20">Add &amp; Norm</text>
+    
+    <rect x="705" y="470" width="230" height="50" rx="8" fill="url(#blueGrad)" stroke="#1976D2" stroke-width="2"/>
+    <text x="820" y="500" font-family="Arial, sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="#0d47a1">Layer Normalization</text>
+    
+    <rect x="705" y="535" width="230" height="90" rx="8" fill="url(#orangeGrad)" stroke="#F57C00" stroke-width="2"/>
+    <text x="820" y="555" font-family="Arial, sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="#E65100">MoE FFN</text>
+    <line x1="715" y1="565" x2="925" y2="565" stroke="#F57C00" stroke-width="1"/>
+    <text x="820" y="585" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#BF360C">Sparse Expert Routing</text>
+    
+    <ellipse cx="820" cy="660" rx="70" ry="28" fill="url(#greenGrad)" stroke="#388E3C" stroke-width="2"/>
+    <text x="820" y="667" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#1B5E20">Add &amp; Norm</text>
+  </g>
+
+  <!-- Transformer Block N (dots) -->
+  <g id="block-n">
+    <rect x="995" y="165" width="330" height="535" rx="12" fill="white" stroke="#616161" stroke-width="2.5" filter="url(#shadow)"/>
+    <text x="1160" y="195" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#212121">Transformer Block N</text>
+    
+    <circle cx="1160" cy="300" r="10" fill="#757575"/>
+    <circle cx="1160" cy="350" r="10" fill="#757575"/>
+    <circle cx="1160" cy="400" r="10" fill="#757575"/>
+    
+    <text x="1160" y="470" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#616161">Identical structure with:</text>
+    <text x="1160" y="495" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#616161">• Multi-Head Attention</text>
+    <text x="1160" y="520" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#616161">• MoE Feed-Forward</text>
+    <text x="1160" y="545" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#616161">• Layer Normalization</text>
+    <text x="1160" y="570" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#616161">• Residual Connections</text>
+    
+    <rect x="1030" y="590" width="260" height="50" rx="8" fill="#E8EAF6" stroke="#3F51B5" stroke-width="2"/>
+    <text x="1160" y="615" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#1A237E">Context Window:</text>
+    <text x="1160" y="633" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#1A237E">1 Million Tokens</text>
+  </g>
+
+  <!-- Arrows between blocks -->
+  <line x1="645" y1="410" x2="680" y2="410" stroke="#424242" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <line x1="960" y1="410" x2="995" y2="410" stroke="#424242" stroke-width="3" marker-end="url(#arrowhead)"/>
+
+  <!-- Output Section -->
+  <g id="output-section">
+    <!-- Arrow from transformer to final norm -->
+    <line x1="1325" y1="410" x2="1390" y2="410" stroke="#424242" stroke-width="3" marker-end="url(#arrowhead)"/>
+    
+    <!-- Final Layer Norm -->
+    <rect x="1400" y="360" width="150" height="100" rx="12" fill="url(#blueGrad)" stroke="#1976D2" stroke-width="2.5" filter="url(#shadow)"/>
+    <text x="1475" y="395" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#0d47a1">Final Layer</text>
+    <text x="1475" y="415" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#0d47a1">Normalization</text>
+    <line x1="1415" y1="425" x2="1535" y2="425" stroke="#1976D2" stroke-width="1"/>
+    <text x="1475" y="445" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#1565C0">Pre-output processing</text>
+    
+    <!-- Arrow to output head -->
+    <line x1="1550" y1="410" x2="1590" y2="410" stroke="#424242" stroke-width="3" marker-end="url(#arrowhead)"/>
+    
+    <!-- Output Head -->
+    <rect x="1600" y="165" width="150" height="490" rx="12" fill="url(#redGrad)" stroke="#C62828" stroke-width="2.5" filter="url(#shadow)"/>
+    <text x="1675" y="195" font-family="Arial, sans-serif" font-size="15" font-weight="bold" text-anchor="middle" fill="#B71C1C">Output Head</text>
+    <line x1="1615" y1="205" x2="1735" y2="205" stroke="#C62828" stroke-width="1.5"/>
+    
+    <rect x="1620" y="220" width="110" height="60" rx="6" fill="#FFEBEE" stroke="#E53935" stroke-width="1.5"/>
+    <text x="1675" y="243" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#C62828">Text</text>
+    <text x="1675" y="260" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#D32F2F">Generation</text>
+    <text x="1675" y="273" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#E57373">(Softmax)</text>
+    
+    <rect x="1620" y="295" width="110" height="55" rx="6" fill="#FFEBEE" stroke="#E53935" stroke-width="1.5"/>
+    <text x="1675" y="318" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#C62828">Image</text>
+    <text x="1675" y="335" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#D32F2F">Generation</text>
+    
+    <rect x="1620" y="365" width="110" height="55" rx="6" fill="#FFEBEE" stroke="#E53935" stroke-width="1.5"/>
+    <text x="1675" y="388" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#C62828">Tool Use</text>
+    <text x="1675" y="405" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#D32F2F">API Calls</text>
+    
+    <rect x="1620" y="435" width="110" height="55" rx="6" fill="#FFEBEE" stroke="#E53935" stroke-width="1.5"/>
+    <text x="1675" y="458" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#C62828">Code</text>
+    <text x="1675" y="475" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#D32F2F">Execution</text>
+    
+    <rect x="1620" y="505" width="110" height="55" rx="6" fill="#FFEBEE" stroke="#E53935" stroke-width="1.5"/>
+    <text x="1675" y="528" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#C62828">Reasoning</text>
+    <text x="1675" y="545" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#D32F2F">Native</text>
+    
+    <rect x="1620" y="575" width="110" height="65" rx="6" fill="#FFEBEE" stroke="#E53935" stroke-width="1.5"/>
+    <text x="1675" y="598" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#C62828">Multimodal</text>
+    <text x="1675" y="613" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#D32F2F">Understanding &amp;</text>
+    <text x="1675" y="628" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#D32F2F">Generation</text>
+  </g>
+
+  <!-- Bottom Section: Key Features and MoE Details -->
+  <g id="bottom-info">
+    <!-- Key Features -->
+    <rect x="50" y="730" width="600" height="300" rx="12" fill="#E8EAF6" stroke="#3F51B5" stroke-width="2.5" filter="url(#shadow)"/>
+    <text x="350" y="765" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#1A237E">Key Architectural Features</text>
+    <line x1="70" y1="775" x2="630" y2="775" stroke="#3F51B5" stroke-width="2"/>
+    
+    <g id="features-list">
+      <text x="80" y="805" font-family="Arial, sans-serif" font-size="13" fill="#283593">• <tspan font-weight="bold">Native Multimodal:</tspan> Unified training from scratch</text>
+      <text x="80" y="830" font-family="Arial, sans-serif" font-size="13" fill="#283593">• <tspan font-weight="bold">Mixture of Experts (MoE):</tspan> Efficient sparse computation</text>
+      <text x="80" y="855" font-family="Arial, sans-serif" font-size="13" fill="#283593">• <tspan font-weight="bold">Context Window:</tspan> 1 million tokens capacity</text>
+      <text x="80" y="880" font-family="Arial, sans-serif" font-size="13" fill="#283593">• <tspan font-weight="bold">Cross-Modal Attention:</tspan> Integrated modality processing</text>
+      <text x="80" y="905" font-family="Arial, sans-serif" font-size="13" fill="#283593">• <tspan font-weight="bold">Native Tool Use:</tspan> Built-in API integration</text>
+      <text x="80" y="930" font-family="Arial, sans-serif" font-size="13" fill="#283593">• <tspan font-weight="bold">Advanced Reasoning:</tspan> Enhanced logical processing</text>
+      <text x="80" y="955" font-family="Arial, sans-serif" font-size="13" fill="#283593">• <tspan font-weight="bold">Real-time Streaming:</tspan> Low-latency response generation</text>
+      <text x="80" y="980" font-family="Arial, sans-serif" font-size="13" fill="#283593">• <tspan font-weight="bold">Code Execution:</tspan> Direct code interpretation</text>
+      <text x="80" y="1005" font-family="Arial, sans-serif" font-size="13" fill="#283593">• <tspan font-weight="bold">Multimodal Generation:</tspan> Text, image, and code outputs</text>
+    </g>
+
+    <!-- MoE Details -->
+    <rect x="700" y="730" width="650" height="300" rx="12" fill="#FFF3E0" stroke="#FF6F00" stroke-width="2.5" filter="url(#shadow)"/>
+    <text x="1025" y="765" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#E65100">Mixture of Experts (MoE) Architecture</text>
+    <line x1="720" y1="775" x2="1330" y2="775" stroke="#FF6F00" stroke-width="2"/>
+    
+    <!-- Router Network -->
+    <rect x="730" y="795" width="580" height="60" rx="8" fill="#FFE0B2" stroke="#F57C00" stroke-width="2"/>
+    <text x="1020" y="820" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#BF360C">Router Network (Gating Mechanism)</text>
+    <text x="1020" y="840" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#D84315">Selects top-K experts for each token dynamically</text>
+    
+    <!-- Expert Networks -->
+    <text x="1020" y="880" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#E65100">Expert Networks</text>
+    
+    <rect x="760" y="895" width="140" height="50" rx="6" fill="#FFCC80" stroke="#F57C00" stroke-width="1.5"/>
+    <text x="830" y="918" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#BF360C">Expert 1</text>
+    <text x="830" y="933" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#D84315">Specialized FFN</text>
+    
+    <rect x="920" y="895" width="140" height="50" rx="6" fill="#FFCC80" stroke="#F57C00" stroke-width="1.5"/>
+    <text x="990" y="918" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#BF360C">Expert 2</text>
+    <text x="990" y="933" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#D84315">Specialized FFN</text>
+    
+    <text x="1095" y="923" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#757575">...</text>
+    
+    <rect x="1130" y="895" width="140" height="50" rx="6" fill="#FFCC80" stroke="#F57C00" stroke-width="1.5"/>
+    <text x="1200" y="918" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#BF360C">Expert N</text>
+    <text x="1200" y="933" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#D84315">Specialized FFN</text>
+    
+    <!-- Benefits -->
+    <rect x="730" y="965" width="580" height="50" rx="8" fill="#FFE0B2" stroke="#F57C00" stroke-width="2"/>
+    <text x="760" y="985" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="start" fill="#BF360C">Benefits:</text>
+    <text x="840" y="985" font-family="Arial, sans-serif" font-size="11" text-anchor="start" fill="#D84315">Increased capacity •</text>
+    <text x="980" y="985" font-family="Arial, sans-serif" font-size="11" text-anchor="start" fill="#D84315">Efficient sparse computation •</text>
+    <text x="760" y="1003" font-family="Arial, sans-serif" font-size="11" text-anchor="start" fill="#D84315">Specialized domain expertise • Scalable architecture</text>
+  </g>
+
+  <!-- Footer Note -->
+  <text x="900" y="1070" font-family="Arial, sans-serif" font-size="11" font-style="italic" text-anchor="middle" fill="#757575">
+    Note: Exact architecture details are proprietary to Google DeepMind. This diagram represents a conceptual transformer-based
+  </text>
+  <text x="900" y="1088" font-family="Arial, sans-serif" font-size="11" font-style="italic" text-anchor="middle" fill="#757575">
+    architecture incorporating publicly known features of Gemini 2.0 Flash.
+  </text>
+</svg>

@@ -1,0 +1,679 @@
+{
+  "metadata": {
+    "timestamp": "2025-11-19T02:04:35.187210",
+    "total_queries": 91,
+    "version": "1.0",
+    "system": "Bangladesh Constitution Chatbot"
+  },
+  "queries": {
+    "latency_evaluation": [
+      {
+        "query": "What are the fundamental rights in Bangladesh Constitution?",
+        "use_llm": true,
+        "language": "en"
+      },
+      {
+        "query": "Explain Article 7 of the Constitution",
+        "use_llm": true,
+        "language": "en"
+      },
+      {
+        "query": "What is the structure of Parliament?",
+        "use_llm": true,
+        "language": "en"
+      },
+      {
+        "query": "Tell me about the Prime Minister powers",
+        "use_llm": true,
+        "language": "en"
+      },
+      {
+        "query": "What are directive principles of state policy?",
+        "use_llm": true,
+        "language": "en"
+      },
+      {
+        "query": "Explain judicial independence in Bangladesh",
+        "use_llm": true,
+        "language": "en"
+      },
+      {
+        "query": "What is Article 27 about?",
+        "use_llm": true,
+        "language": "en"
+      },
+      {
+        "query": "How can the constitution be amended?",
+        "use_llm": true,
+        "language": "en"
+      },
+      {
+        "query": "What are the emergency provisions?",
+        "use_llm": true,
+        "language": "en"
+      },
+      {
+        "query": "Describe the election process",
+        "use_llm": true,
+        "language": "en"
+      },
+      {
+        "query": "সংবিধানের মৌলিক অধিকার কি কি?",
+        "use_llm": true,
+        "language": "bn"
+      },
+      {
+        "query": "অনুচ্ছেদ ৭ সম্পর্কে বলুন",
+        "use_llm": true,
+        "language": "bn"
+      },
+      {
+        "query": "সংসদের গঠন কি?",
+        "use_llm": true,
+        "language": "bn"
+      },
+      {
+        "query": "প্রধানমন্ত্রীর ক্ষমতা কি?",
+        "use_llm": true,
+        "language": "bn"
+      },
+      {
+        "query": "রাষ্ট্র পরিচালনার মূলনীতি কি?",
+        "use_llm": true,
+        "language": "bn"
+      },
+      {
+        "query": "What is অনুচ্ছেদ ৭?",
+        "use_llm": true,
+        "language": "mixed"
+      },
+      {
+        "query": "Fundamental rights সম্পর্কে বলুন",
+        "use_llm": true,
+        "language": "mixed"
+      },
+      {
+        "query": "Article 7",
+        "use_llm": false,
+        "language": "en"
+      },
+      {
+        "query": "Fundamental rights",
+        "use_llm": false,
+        "language": "en"
+      },
+      {
+        "query": "Prime Minister",
+        "use_llm": false,
+        "language": "en"
+      }
+    ],
+    "language_detection": [
+      {
+        "text": "The Constitution of Bangladesh is the supreme law of Bangladesh.",
+        "true_language": "en",
+        "expected_failure": false
+      },
+      {
+        "text": "What are the fundamental rights guaranteed by the Constitution?",
+        "true_language": "en",
+        "expected_failure": false
+      },
+      {
+        "text": "Parliament consists of the President and a single House.",
+        "true_language": "en",
+        "expected_failure": false
+      },
+      {
+        "text": "The Prime Minister is appointed by the President.",
+        "true_language": "en",
+        "expected_failure": false
+      },
+      {
+        "text": "Judicial independence is fundamental to democracy.",
+        "true_language": "en",
+        "expected_failure": false
+      },
+      {
+        "text": "বাংলাদেশের সংবিধান হল বাংলাদেশের সর্বোচ্চ আইন।",
+        "true_language": "bn",
+        "expected_failure": false
+      },
+      {
+        "text": "সংবিধান দ্বারা নিশ্চিত মৌলিক অধিকার কী কী?",
+        "true_language": "bn",
+        "expected_failure": false
+      },
+      {
+        "text": "সংসদ রাষ্ট্রপতি এবং একটি একক সভা নিয়ে গঠিত।",
+        "true_language": "bn",
+        "expected_failure": false
+      },
+      {
+        "text": "প্রধানমন্ত্রী রাষ্ট্রপতি কর্তৃক নিয়োগ করা হয়।",
+        "true_language": "bn",
+        "expected_failure": false
+      },
+      {
+        "text": "বিচারবিভাগের স্বাধীনতা গণতন্ত্রের মৌলিক ভিত্তি।",
+        "true_language": "bn",
+        "expected_failure": false
+      },
+      {
+        "text": "What is অনুচ্ছেদ ৭ about?",
+        "true_language": "mixed",
+        "expected_failure": true
+      },
+      {
+        "text": "The Constitution এর Article 27 সম্পর্কে বলুন",
+        "true_language": "mixed",
+        "expected_failure": true
+      },
+      {
+        "text": "Fundamental rights কি মৌলিক অধিকার?",
+        "true_language": "mixed",
+        "expected_failure": true
+      },
+      {
+        "text": "সংসদ or Parliament কোনটি সঠিক?",
+        "true_language": "mixed",
+        "expected_failure": true
+      },
+      {
+        "text": "Article ৭ vs Article 7 difference",
+        "true_language": "mixed",
+        "expected_failure": true
+      },
+      {
+        "text": "Article 7",
+        "true_language": "en",
+        "expected_failure": true
+      },
+      {
+        "text": "অনুচ্ছেদ ৭",
+        "true_language": "bn",
+        "expected_failure": true
+      },
+      {
+        "text": "Constitution",
+        "true_language": "en",
+        "expected_failure": true
+      },
+      {
+        "text": "সংবিধান",
+        "true_language": "bn",
+        "expected_failure": true
+      },
+      {
+        "text": "PM",
+        "true_language": "en",
+        "expected_failure": true
+      },
+      {
+        "text": "1972",
+        "true_language": "mixed",
+        "expected_failure": true
+      },
+      {
+        "text": "Bangladesh 1972 সংবিধান",
+        "true_language": "mixed",
+        "expected_failure": true
+      },
+      {
+        "text": "Art 7",
+        "true_language": "en",
+        "expected_failure": true
+      },
+      {
+        "text": "Sangsad er gothon ki?",
+        "true_language": "en",
+        "expected_failure": true
+      },
+      {
+        "text": "Pradhanmontri er khomota",
+        "true_language": "en",
+        "expected_failure": true
+      }
+    ],
+    "retrieval_evaluation": [
+      {
+        "query": "What are fundamental rights?",
+        "expected_articles": [
+          "26",
+          "27",
+          "28",
+          "29",
+          "30",
+          "31",
+          "32",
+          "33",
+          "34",
+          "35",
+          "36",
+          "37",
+          "38",
+          "39",
+          "40",
+          "41",
+          "42",
+          "43",
+          "44"
+        ],
+        "min_relevance_score": 0.7
+      },
+      {
+        "query": "Explain Article 7",
+        "expected_articles": [
+          "7"
+        ],
+        "min_relevance_score": 0.9
+      },
+      {
+        "query": "What is the structure of Parliament?",
+        "expected_articles": [
+          "65",
+          "66",
+          "67",
+          "68",
+          "69",
+          "70"
+        ],
+        "min_relevance_score": 0.7
+      },
+      {
+        "query": "Tell me about Prime Minister",
+        "expected_articles": [
+          "55",
+          "56",
+          "57",
+          "58"
+        ],
+        "min_relevance_score": 0.7
+      },
+      {
+        "query": "What is Article 27 about equality?",
+        "expected_articles": [
+          "27",
+          "28",
+          "29"
+        ],
+        "min_relevance_score": 0.8
+      },
+      {
+        "query": "Emergency provisions in constitution",
+        "expected_articles": [
+          "141",
+          "141A",
+          "141B",
+          "141C"
+        ],
+        "min_relevance_score": 0.7
+      },
+      {
+        "query": "How to amend constitution?",
+        "expected_articles": [
+          "142"
+        ],
+        "min_relevance_score": 0.8
+      },
+      {
+        "query": "মৌলিক অধিকার কি?",
+        "expected_articles": [
+          "26",
+          "27",
+          "28",
+          "29",
+          "30",
+          "31",
+          "32"
+        ],
+        "min_relevance_score": 0.7
+      },
+      {
+        "query": "অনুচ্ছেদ ৭ সম্পর্কে বলুন",
+        "expected_articles": [
+          "7"
+        ],
+        "min_relevance_score": 0.9
+      },
+      {
+        "query": "What is the weather today?",
+        "expected_articles": [],
+        "min_relevance_score": 0.0
+      },
+      {
+        "query": "Tell me a joke",
+        "expected_articles": [],
+        "min_relevance_score": 0.0
+      },
+      {
+        "query": "Capital of France",
+        "expected_articles": [],
+        "min_relevance_score": 0.0
+      }
+    ],
+    "scope_validation": [
+      {
+        "query": "What are fundamental rights in Bangladesh Constitution?",
+        "true_scope": "in_scope"
+      },
+      {
+        "query": "Explain Article 7",
+        "true_scope": "in_scope"
+      },
+      {
+        "query": "সংবিধানের মৌলিক অধিকার",
+        "true_scope": "in_scope"
+      },
+      {
+        "query": "Constitutional amendment process",
+        "true_scope": "in_scope"
+      },
+      {
+        "query": "Prime Minister powers Bangladesh",
+        "true_scope": "in_scope"
+      },
+      {
+        "query": "Parliament structure Bangladesh",
+        "true_scope": "in_scope"
+      },
+      {
+        "query": "Judicial independence in constitution",
+        "true_scope": "in_scope"
+      },
+      {
+        "query": "Emergency provisions Bangladesh",
+        "true_scope": "in_scope"
+      },
+      {
+        "query": "Fundamental principles of state policy",
+        "true_scope": "in_scope"
+      },
+      {
+        "query": "Election process in constitution",
+        "true_scope": "in_scope"
+      },
+      {
+        "query": "What does Article 27 say?",
+        "true_scope": "in_scope"
+      },
+      {
+        "query": "অনুচ্ছেদ ৭ কি বলে?",
+        "true_scope": "in_scope"
+      },
+      {
+        "query": "Constitution of Bangladesh 1972",
+        "true_scope": "in_scope"
+      },
+      {
+        "query": "Rights of citizens Bangladesh",
+        "true_scope": "in_scope"
+      },
+      {
+        "query": "Supreme law Bangladesh",
+        "true_scope": "in_scope"
+      },
+      {
+        "query": "What is the weather today?",
+        "true_scope": "out_of_scope"
+      },
+      {
+        "query": "Tell me a joke",
+        "true_scope": "out_of_scope"
+      },
+      {
+        "query": "Capital of France",
+        "true_scope": "out_of_scope"
+      },
+      {
+        "query": "How to cook pasta?",
+        "true_scope": "out_of_scope"
+      },
+      {
+        "query": "Who won the cricket match?",
+        "true_scope": "out_of_scope"
+      },
+      {
+        "query": "Stock market news",
+        "true_scope": "out_of_scope"
+      },
+      {
+        "query": "Latest COVID statistics",
+        "true_scope": "out_of_scope"
+      },
+      {
+        "query": "Movie recommendations",
+        "true_scope": "out_of_scope"
+      },
+      {
+        "query": "Python programming tutorial",
+        "true_scope": "out_of_scope"
+      },
+      {
+        "query": "Best restaurants in Dhaka",
+        "true_scope": "out_of_scope"
+      },
+      {
+        "query": "Bangladesh history",
+        "true_scope": "out_of_scope"
+      },
+      {
+        "query": "Government of Bangladesh",
+        "true_scope": "in_scope"
+      },
+      {
+        "query": "Laws in Bangladesh",
+        "true_scope": "out_of_scope"
+      },
+      {
+        "query": "Supreme Court Bangladesh",
+        "true_scope": "in_scope"
+      }
+    ],
+    "recall_at_k": [
+      {
+        "query": "fundamental rights",
+        "ranked_results": [
+          {
+            "doc_id": "art_26",
+            "score": 0.95
+          },
+          {
+            "doc_id": "art_27",
+            "score": 0.92
+          },
+          {
+            "doc_id": "art_28",
+            "score": 0.89
+          },
+          {
+            "doc_id": "art_29",
+            "score": 0.85
+          },
+          {
+            "doc_id": "art_30",
+            "score": 0.82
+          },
+          {
+            "doc_id": "art_15",
+            "score": 0.78
+          },
+          {
+            "doc_id": "art_31",
+            "score": 0.75
+          },
+          {
+            "doc_id": "art_32",
+            "score": 0.72
+          },
+          {
+            "doc_id": "art_33",
+            "score": 0.68
+          },
+          {
+            "doc_id": "art_34",
+            "score": 0.65
+          }
+        ],
+        "relevant_docs": [
+          "art_35",
+          "art_29",
+          "art_32",
+          "art_26",
+          "art_28",
+          "art_34",
+          "art_30",
+          "art_27",
+          "art_33",
+          "art_31"
+        ]
+      },
+      {
+        "query": "Article 7 supremacy",
+        "ranked_results": [
+          {
+            "doc_id": "art_7",
+            "score": 0.98
+          },
+          {
+            "doc_id": "art_7_explanation",
+            "score": 0.91
+          },
+          {
+            "doc_id": "preamble",
+            "score": 0.75
+          },
+          {
+            "doc_id": "art_8",
+            "score": 0.68
+          },
+          {
+            "doc_id": "art_6",
+            "score": 0.62
+          }
+        ],
+        "relevant_docs": [
+          "art_7_explanation",
+          "art_7"
+        ]
+      },
+      {
+        "query": "Parliament composition",
+        "ranked_results": [
+          {
+            "doc_id": "art_65",
+            "score": 0.94
+          },
+          {
+            "doc_id": "art_66",
+            "score": 0.9
+          },
+          {
+            "doc_id": "art_67",
+            "score": 0.86
+          },
+          {
+            "doc_id": "art_68",
+            "score": 0.82
+          },
+          {
+            "doc_id": "art_69",
+            "score": 0.78
+          },
+          {
+            "doc_id": "art_70",
+            "score": 0.74
+          },
+          {
+            "doc_id": "art_71",
+            "score": 0.7
+          },
+          {
+            "doc_id": "art_50",
+            "score": 0.65
+          },
+          {
+            "doc_id": "art_72",
+            "score": 0.62
+          },
+          {
+            "doc_id": "art_73",
+            "score": 0.58
+          }
+        ],
+        "relevant_docs": [
+          "art_72",
+          "art_66",
+          "art_65",
+          "art_67",
+          "art_70",
+          "art_68",
+          "art_71",
+          "art_69"
+        ]
+      },
+      {
+        "query": "Prime Minister powers",
+        "ranked_results": [
+          {
+            "doc_id": "art_55",
+            "score": 0.96
+          },
+          {
+            "doc_id": "art_56",
+            "score": 0.92
+          },
+          {
+            "doc_id": "art_57",
+            "score": 0.88
+          },
+          {
+            "doc_id": "art_58",
+            "score": 0.84
+          },
+          {
+            "doc_id": "art_48",
+            "score": 0.79
+          }
+        ],
+        "relevant_docs": [
+          "art_57",
+          "art_55",
+          "art_56",
+          "art_58"
+        ]
+      },
+      {
+        "query": "emergency provisions",
+        "ranked_results": [
+          {
+            "doc_id": "art_141",
+            "score": 0.95
+          },
+          {
+            "doc_id": "art_141A",
+            "score": 0.91
+          },
+          {
+            "doc_id": "art_141B",
+            "score": 0.87
+          },
+          {
+            "doc_id": "art_141C",
+            "score": 0.83
+          },
+          {
+            "doc_id": "art_142",
+            "score": 0.76
+          }
+        ],
+        "relevant_docs": [
+          "art_141A",
+          "art_141B",
+          "art_141",
+          "art_141C"
+        ]
+      }
+    ]
+  }
+}

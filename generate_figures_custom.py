@@ -15,8 +15,7 @@ from visualizations import (
     rag_pipeline,
     performance_metrics,
     data_analysis,
-    comparison_charts,
-    deployment_diagrams
+    comparison_charts
 )
 
 def main():
@@ -50,10 +49,6 @@ def main():
     # Comparison Charts (Figures 15-17)
     print("\n🔍 Generating Comparison Charts...")
     comparison_charts.generate_all()
-    
-    # Deployment Diagrams (Figures 18-20)
-    print("\n🚀 Generating Deployment Diagrams...")
-    deployment_diagrams.generate_all()
     
     print("\n" + "=" * 60)
     print("✅ Selected figures generated!")

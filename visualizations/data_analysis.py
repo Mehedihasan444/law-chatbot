@@ -18,7 +18,7 @@ def save_fig(fig, name):
 
 def generate_document_statistics():
     """Figure 11: Document and Chunking Statistics"""
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(14, 10))
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(14, 10), constrained_layout=True)
     
     # Document language distribution
     languages = ['English', 'Bengali']
@@ -47,14 +47,14 @@ def generate_document_statistics():
     for bar in bars1:
         height = bar.get_height()
         ax1.text(bar.get_x() + bar.get_width()/2., height,
-                f'{int(height)}',
-                ha='center', va='bottom', fontsize=10, fontweight='bold')
-    
+                 f'{int(height)}',
+                 ha='center', va='bottom', fontsize=10, fontweight='bold')
+
     for bar in bars2:
         height = bar.get_height()
         ax1_twin.text(bar.get_x() + bar.get_width()/2., height,
-                     f'{height:.1f}K',
-                     ha='center', va='bottom', fontsize=10, fontweight='bold')
+                      f'{height:.1f}K',
+                      ha='center', va='bottom', fontsize=10, fontweight='bold')
     
     ax1.legend(loc='upper left', fontsize=10)
     ax1_twin.legend(loc='upper right', fontsize=10)
@@ -86,8 +86,8 @@ def generate_document_statistics():
     for bar in bars:
         width = bar.get_width()
         ax3.text(width + 3, bar.get_y() + bar.get_height()/2.,
-                f'{int(width)}',
-                ha='left', va='center', fontsize=10, fontweight='bold')
+                 f'{int(width)}',
+                 ha='left', va='center', fontsize=10, fontweight='bold')
     
     ax3.set_xlabel('Number of Chunks', fontsize=12, fontweight='bold')
     ax3.set_title('Chunks Distribution by Constitution Part', fontsize=12, fontweight='bold')
@@ -107,19 +107,21 @@ Vector Dimension: 384
 Vector Store Size: 12.5 MB'''
     
     ax4.text(0.5, 0.5, stats_text, ha='center', va='center',
-            fontsize=11, family='monospace',
-            bbox=dict(boxstyle='round', facecolor='#ECF0F1', 
-                     edgecolor='black', linewidth=2))
+             fontsize=11, family='monospace',
+             bbox=dict(boxstyle='round', facecolor='#ECF0F1', 
+                       edgecolor='black', linewidth=2))
     ax4.set_title('Overall Data Statistics', fontsize=12, fontweight='bold')
     ax4.axis('off')
-    
-    plt.suptitle('Document Processing and Chunking Statistics', fontsize=14, fontweight='bold', y=0.995)
+    # Add headroom for labels to the right of bars
+    ax3.set_xlim(0, max(chunks_per_part) * 1.25)
+
+    plt.suptitle('Document Processing and Chunking Statistics', fontsize=14, fontweight='bold', y=0.98)
     save_fig(fig, 'fig11_document_statistics')
 
 
 def generate_language_distribution():
     """Figure 12: Language Distribution and Support"""
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6), constrained_layout=True)
     
     # Query language distribution (simulated user data)
     languages = ['English', 'Bengali', 'Mixed']
@@ -162,13 +164,13 @@ def generate_language_distribution():
     ax2.axhline(y=95, color='green', linestyle='--', linewidth=2, alpha=0.5, label='Target: 95%')
     ax2.legend(fontsize=10)
     
-    plt.suptitle('Language Distribution and Detection Performance', fontsize=14, fontweight='bold', y=0.98)
+    plt.suptitle('Language Distribution and Detection Performance', fontsize=14, fontweight='bold', y=0.96)
     save_fig(fig, 'fig12_language_distribution')
 
 
 def generate_vectorstore_statistics():
     """Figure 13: Vector Store Statistics"""
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(12, 10))
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(12, 10), constrained_layout=True)
     
     # Vector dimensionality comparison
     models = ['USE\n(512d)', 'MiniLM-L6\n(384d)', 'BERT-base\n(768d)', 'MPNet\n(768d)']
@@ -203,7 +205,7 @@ def generate_vectorstore_statistics():
     ax1_twin.patches[1].set_linewidth(3)
     ax1_twin.patches[1].set_edgecolor('green')
     ax1.text(1, 50, '✓ Selected', ha='center', fontsize=9, 
-            color='green', fontweight='bold')
+             color='green', fontweight='bold')
     
     # Index size vs number of vectors
     num_vectors = np.array([100, 250, 500, 750, 1000, 1500, 2000])
@@ -250,19 +252,19 @@ Throughput: ~550 queries/sec
 Accuracy: 100% (exact)'''
     
     ax4.text(0.5, 0.5, stats_text, ha='center', va='center',
-            fontsize=10.5, family='monospace',
-            bbox=dict(boxstyle='round', facecolor='#E8F8F5',
-                     edgecolor='black', linewidth=2))
+             fontsize=10.5, family='monospace',
+             bbox=dict(boxstyle='round', facecolor='#E8F8F5',
+                       edgecolor='black', linewidth=2))
     ax4.set_title('Vector Store Configuration', fontsize=12, fontweight='bold')
     ax4.axis('off')
     
-    plt.suptitle('Vector Store Statistics and Performance', fontsize=14, fontweight='bold', y=0.995)
+    plt.suptitle('Vector Store Statistics and Performance', fontsize=14, fontweight='bold', y=0.98)
     save_fig(fig, 'fig13_vectorstore_statistics')
 
 
 def generate_data_processing_pipeline():
     """Figure 14: Data Processing Pipeline"""
-    fig, ax = plt.subplots(figsize=(14, 8))
+    fig, ax = plt.subplots(figsize=(14, 8), constrained_layout=True)
     ax.set_xlim(0, 14)
     ax.set_ylim(0, 10)
     ax.axis('off')
@@ -341,7 +343,7 @@ def generate_data_processing_pipeline():
             ha='center', va='center', fontsize=8)
     
     # Left side: Statistics
-    stats_box = FancyBboxPatch((0.5, 0.5), 6.5, 6, boxstyle="round,pad=0.15",
+    stats_box = FancyBboxPatch((0.5, 0.5), 6.5, 6, boxstyle="round,pad=0.1",
                                edgecolor='#34495E', facecolor='#ECF0F1', linewidth=2)
     ax.add_patch(stats_box)
     
@@ -353,30 +355,33 @@ def generate_data_processing_pipeline():
 └─ Bengali: 162 pages, 38,920 words
 
 Text Cleaning:
-├─ Removed: Headers, footers, page numbers
-├─ Fixed: Encoding issues, broken words
-└─ Normalized: Whitespace, punctuation
+├─ Removed: headers, footers,
+│  and page numbers
+├─ Fixed: encoding issues
+│  and broken words
+└─ Normalized whitespace
+   and punctuation
 
 Chunking Strategy:
-├─ Method: Recursive character splitting
-├─ Delimiters: Article markers, paragraphs
+├─ Recursive character split
+├─ Article & paragraph cues
 ├─ Size: 512 ± 50 tokens
 ├─ Overlap: 50 tokens (9.8%)
 └─ Output: 543 chunks
 
 Embedding Process:
-├─ Model: sentence-transformers/all-MiniLM-L6-v2
+├─ Model: all-MiniLM-L6-v2
 ├─ Batch size: 32
 ├─ Total time: ~52 seconds
-└─ Avg per chunk: 95ms
+└─ Avg per chunk: 95 ms
 
 Vector Store:
 ├─ Type: FAISS (Flat L2 index)
 ├─ Size: 12.76 MB
 └─ Build time: 8.3 seconds'''
-    
-    ax.text(3.75, 3.5, stats_content, ha='center', va='center',
-            fontsize=7.5, family='monospace', linespacing=1.8)
+
+    ax.text(3.75, 3.5, stats_content, ha='center', va='center', wrap=True,
+            fontsize=7.2, family='monospace', linespacing=1.45)
     
     save_fig(fig, 'fig14_data_processing_pipeline')
 

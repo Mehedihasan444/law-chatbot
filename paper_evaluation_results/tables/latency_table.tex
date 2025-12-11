@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Response Latency Distribution Statistics}
+\label{tab:latency_distribution}
+\begin{tabular}{lrrrrrr}
+\toprule
+Model & n & Mean (s) & Median (s) & P95 (s) & P99 (s) & Std (s) \\
+\midrule
+Overall & 20 & 2.021 & 1.660 & 6.636 & 7.079 & 2.111 \\
+\midrule
+Gemini & 4 & 5.665 & 5.558 & 7.102 & 7.172 & 1.252 \\
+Local & 9 & 1.943 & 1.671 & 2.874 & 2.959 & 0.491 \\
+Simple & 7 & 0.039 & 0.021 & 0.143 & 0.178 & 0.062 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\small
+\item Note: Latency measured for sequential query processing (batch size = 1).
+\item P95 and P99 represent 95th and 99th percentiles respectively.
+\end{tablenotes}
+\end{table}

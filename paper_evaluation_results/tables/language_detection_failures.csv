@@ -1,0 +1,8 @@
+text,true_language,detected_language,text_length,has_bengali_chars,has_english_chars,failure_type
+What is অনুচ্ছেদ ৭ about?,mixed,en,25,True,True,Code-Switched/Mixed
+The Constitution এর Article 27 সম্পর্কে বলুন,mixed,bn,44,True,True,Code-Switched/Mixed
+Fundamental rights কি মৌলিক অধিকার?,mixed,bn,35,True,True,Code-Switched/Mixed
+সংসদ or Parliament কোনটি সঠিক?,mixed,bn,30,True,True,Code-Switched/Mixed
+Article ৭ vs Article 7 difference,mixed,bn,33,True,True,Code-Switched/Mixed
+1972,mixed,en,4,False,False,Short Text (<20 chars)
+Bangladesh 1972 সংবিধান,mixed,bn,23,True,True,Code-Switched/Mixed

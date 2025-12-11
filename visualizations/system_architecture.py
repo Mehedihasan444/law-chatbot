@@ -52,7 +52,7 @@ def draw_arrow(ax, x1, y1, x2, y2, label='', style='->', color='black'):
 
 def generate_overall_architecture():
     """Figure 1: Overall System Architecture"""
-    fig, ax = plt.subplots(figsize=(12, 10))
+    fig, ax = plt.subplots(figsize=(12, 10), constrained_layout=True)
     ax.set_xlim(0, 10)
     ax.set_ylim(0, 12)
     ax.axis('off')
@@ -122,7 +122,7 @@ def generate_overall_architecture():
 
 def generate_component_interaction():
     """Figure 2: Component Interaction Diagram"""
-    fig, ax = plt.subplots(figsize=(14, 8))
+    fig, ax = plt.subplots(figsize=(14, 8), constrained_layout=True)
     ax.set_xlim(0, 14)
     ax.set_ylim(0, 10)
     ax.axis('off')

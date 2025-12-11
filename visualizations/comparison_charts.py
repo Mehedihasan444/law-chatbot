@@ -18,7 +18,7 @@ def save_fig(fig, name):
 
 def generate_model_comparison():
     """Figure 15: Gemini vs Local Model Comparison"""
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(14, 10))
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(14, 10), constrained_layout=True)
     
     # Response Quality (Human Evaluation)
     metrics = ['Accuracy', 'Relevance', 'Completeness', 'Clarity', 'Citation\nQuality']
@@ -134,13 +134,14 @@ def generate_model_comparison():
     ax4.grid(axis='x', alpha=0.3)
     
     plt.suptitle('Gemini-2.0-Flash-Exp vs FLAN-T5 Local Model: Comprehensive Comparison',
-                 fontsize=14, fontweight='bold', y=0.995)
+                 fontsize=14, fontweight='bold', y=0.98)
     save_fig(fig, 'fig15_model_comparison')
 
 
 def generate_fallback_mechanism():
     """Figure 16: Fallback Mechanism Performance"""
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(14, 10))
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(16, 12))
+    fig.subplots_adjust(hspace=0.4, wspace=0.3, top=0.9, bottom=0.1)
     
     # Fallback trigger scenarios
     scenarios = ['Network\nTimeout', 'API Rate\nLimit', 'Service\nUnavailable', '503 Error', 'Connection\nFailed']
@@ -153,14 +154,15 @@ def generate_fallback_mechanism():
         height = bar.get_height()
         ax1.text(bar.get_x() + bar.get_width()/2., height + 0.5,
                 f'{height}%',
-                ha='center', va='bottom', fontsize=10, fontweight='bold')
+                ha='center', va='bottom', fontsize=9, fontweight='bold')
     
-    ax1.set_ylabel('Fallback Success Rate (%)', fontsize=11, fontweight='bold')
-    ax1.set_title('Fallback Trigger Success by Scenario', fontsize=12, fontweight='bold')
+    ax1.set_ylabel('Fallback Success Rate (%)', fontsize=10, fontweight='bold')
+    ax1.set_title('Fallback Trigger Success by Scenario', fontsize=11, fontweight='bold')
     ax1.set_ylim(0, 105)
     ax1.grid(axis='y', alpha=0.3)
     ax1.axhline(y=95, color='green', linestyle='--', linewidth=2, alpha=0.5, label='Target: 95%')
-    ax1.legend(fontsize=10)
+    ax1.legend(fontsize=9)
+    ax1.tick_params(axis='x', labelsize=8)
     
     # Fallback transition time
     np.random.seed(42)
@@ -171,10 +173,10 @@ def generate_fallback_mechanism():
                 label=f'Mean: {np.mean(transition_times):.1f}s')
     ax2.axvline(np.percentile(transition_times, 95), color='orange', linestyle='--', linewidth=2,
                 label=f'95th percentile: {np.percentile(transition_times, 95):.1f}s')
-    ax2.set_xlabel('Fallback Transition Time (seconds)', fontsize=11, fontweight='bold')
-    ax2.set_ylabel('Frequency', fontsize=11)
-    ax2.set_title('Fallback Mechanism Response Time', fontsize=12, fontweight='bold')
-    ax2.legend(fontsize=10)
+    ax2.set_xlabel('Fallback Transition Time (seconds)', fontsize=10, fontweight='bold')
+    ax2.set_ylabel('Frequency', fontsize=10)
+    ax2.set_title('Fallback Mechanism Response Time', fontsize=11, fontweight='bold')
+    ax2.legend(fontsize=9)
     ax2.grid(axis='y', alpha=0.3)
     
     # Availability comparison
@@ -199,10 +201,10 @@ def generate_fallback_mechanism():
     ax3.fill_between(time_hours, 0, gemini_only, alpha=0.2, color='#E74C3C')
     ax3.fill_between(time_hours, 0, with_fallback, alpha=0.3, color='#2ECC71')
     
-    ax3.set_xlabel('Time (hours)', fontsize=11, fontweight='bold')
-    ax3.set_ylabel('Service Availability (%)', fontsize=11, fontweight='bold')
-    ax3.set_title('System Availability Over Time (1 week)', fontsize=12, fontweight='bold')
-    ax3.legend(fontsize=11)
+    ax3.set_xlabel('Time (hours)', fontsize=10, fontweight='bold')
+    ax3.set_ylabel('Service Availability (%)', fontsize=10, fontweight='bold')
+    ax3.set_title('System Availability Over Time (1 week)', fontsize=11, fontweight='bold')
+    ax3.legend(fontsize=9)
     ax3.set_ylim(0, 110)
     ax3.grid(True, alpha=0.3)
     
@@ -211,7 +213,7 @@ def generate_fallback_mechanism():
     hybrid_uptime = (np.sum(with_fallback > 0) / len(with_fallback)) * 100
     
     ax3.text(0.02, 0.95, f'Gemini Only Uptime: {gemini_uptime:.1f}%\nHybrid System Uptime: {hybrid_uptime:.1f}%',
-            transform=ax3.transAxes, fontsize=10, verticalalignment='top',
+            transform=ax3.transAxes, fontsize=9, verticalalignment='top',
             bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8))
     
     # Fallback statistics
@@ -238,20 +240,21 @@ Automatic retry: 3 attempts
 Backoff strategy: Exponential'''
     
     ax4.text(0.5, 0.5, stats_text, ha='center', va='center',
-            fontsize=9, family='monospace', linespacing=1.6,
-            bbox=dict(boxstyle='round', facecolor='#E8F8F5',
-                     edgecolor='black', linewidth=2))
-    ax4.set_title('Fallback Mechanism Statistics', fontsize=12, fontweight='bold')
+             fontsize=8, family='monospace', linespacing=1.4,
+             bbox=dict(boxstyle='round', facecolor='#E8F8F5',
+                       edgecolor='black', linewidth=2, pad=0.5))
+    ax4.set_title('Fallback Mechanism Statistics', fontsize=11, fontweight='bold')
     ax4.axis('off')
     
     plt.suptitle('Automatic Fallback Mechanism: Performance and Reliability',
-                 fontsize=14, fontweight='bold', y=0.995)
+                 fontsize=13, fontweight='bold', y=0.98)
     save_fig(fig, 'fig16_fallback_mechanism')
 
 
 def generate_bilingual_effectiveness():
     """Figure 17: Bilingual Support Effectiveness"""
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(14, 10))
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(16, 12))
+    fig.subplots_adjust(hspace=0.4, wspace=0.3, top=0.9, bottom=0.1)
     
     # Response quality by language
     query_types = ['Simple\nFacts', 'Complex\nAnalysis', 'Legal\nInterpretation', 'Multi-\nArticle', 'Contextual\nQuery']
@@ -271,13 +274,13 @@ def generate_bilingual_effectiveness():
             height = bar.get_height()
             ax1.text(bar.get_x() + bar.get_width()/2., height + 0.5,
                     f'{int(height)}',
-                    ha='center', va='bottom', fontsize=9, fontweight='bold')
+                    ha='center', va='bottom', fontsize=8, fontweight='bold')
     
-    ax1.set_ylabel('Quality Score', fontsize=11, fontweight='bold')
-    ax1.set_title('Response Quality by Language and Query Type', fontsize=12, fontweight='bold')
+    ax1.set_ylabel('Quality Score', fontsize=10, fontweight='bold')
+    ax1.set_title('Response Quality by Language and Query Type', fontsize=11, fontweight='bold')
     ax1.set_xticks(x)
-    ax1.set_xticklabels(query_types, fontsize=9)
-    ax1.legend(fontsize=11)
+    ax1.set_xticklabels(query_types, fontsize=8)
+    ax1.legend(fontsize=10)
     ax1.set_ylim(0, 100)
     ax1.grid(axis='y', alpha=0.3)
     
@@ -293,11 +296,11 @@ def generate_bilingual_effectiveness():
     bars2 = ax2.bar(x2 + width/2, response_qual, width, label='Response Quality',
                    color='#F39C12', alpha=0.8, edgecolor='black', linewidth=1.5)
     
-    ax2.set_ylabel('Score (%)', fontsize=11, fontweight='bold')
-    ax2.set_title('Language Mixing Handling', fontsize=12, fontweight='bold')
+    ax2.set_ylabel('Score (%)', fontsize=10, fontweight='bold')
+    ax2.set_title('Language Mixing Handling', fontsize=11, fontweight='bold')
     ax2.set_xticks(x2)
-    ax2.set_xticklabels(scenarios, fontsize=8.5)
-    ax2.legend(fontsize=11)
+    ax2.set_xticklabels(scenarios, fontsize=7.5)
+    ax2.legend(fontsize=9)
     ax2.set_ylim(0, 105)
     ax2.grid(axis='y', alpha=0.3)
     
@@ -312,12 +315,13 @@ def generate_bilingual_effectiveness():
         width_bar = bar.get_width()
         ax3.text(width_bar + 0.5, bar.get_y() + bar.get_height()/2.,
                 f'{width_bar:.1f}%',
-                ha='left', va='center', fontsize=10, fontweight='bold')
+                ha='left', va='center', fontsize=9, fontweight='bold')
     
-    ax3.set_xlabel('Success Rate (%)', fontsize=11, fontweight='bold')
-    ax3.set_title('Bengali Text Encoding Issues Handling', fontsize=12, fontweight='bold')
+    ax3.set_xlabel('Success Rate (%)', fontsize=10, fontweight='bold')
+    ax3.set_title('Bengali Text Encoding Issues Handling', fontsize=11, fontweight='bold')
     ax3.set_xlim(0, 105)
     ax3.grid(axis='x', alpha=0.3)
+    ax3.tick_params(axis='y', labelsize=8)
     
     # Bilingual statistics
     stats_text = '''Bilingual Support Statistics
@@ -350,14 +354,14 @@ Character Encoding:
 └─ Success rate: 97.8%'''
     
     ax4.text(0.5, 0.5, stats_text, ha='center', va='center',
-            fontsize=9, family='monospace', linespacing=1.6,
-            bbox=dict(boxstyle='round', facecolor='#FEF9E7',
-                     edgecolor='black', linewidth=2))
-    ax4.set_title('Bilingual Support Statistics', fontsize=12, fontweight='bold')
+             fontsize=7.5, family='monospace', linespacing=1.4,
+             bbox=dict(boxstyle='round', facecolor='#FEF9E7',
+                       edgecolor='black', linewidth=2, pad=0.5))
+    ax4.set_title('Bilingual Support Statistics', fontsize=11, fontweight='bold')
     ax4.axis('off')
     
     plt.suptitle('Bilingual Support Effectiveness Analysis',
-                 fontsize=14, fontweight='bold', y=0.995)
+                 fontsize=13, fontweight='bold', y=0.98)
     save_fig(fig, 'fig17_bilingual_effectiveness')
 
 

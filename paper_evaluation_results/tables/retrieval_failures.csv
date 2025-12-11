@@ -1,0 +1,13 @@
+query,expected_articles,retrieved_articles,missed_articles,irrelevant_articles,num_sources,failure_type
+What are fundamental rights?,"['42', '27', '33', '38', '36', '43', '41', '26', '40', '39', '34', '37', '28', '29', '32', '44', '35', '30', '31']",[],"['34', '42', '37', '28', '27', '33', '38', '29', '32', '36', '44', '35', '30', '43', '41', '26', '40', '39', '31']",[],3,Complete Miss (0 retrieved)
+Explain Article 7,['7'],[],['7'],[],3,Complete Miss (0 retrieved)
+What is the structure of Parliament?,"['65', '68', '66', '67', '70', '69']",[],"['70', '65', '68', '69', '66', '67']",[],3,Complete Miss (0 retrieved)
+Tell me about Prime Minister,"['55', '58', '56', '57']",[],"['55', '58', '56', '57']",[],3,Complete Miss (0 retrieved)
+What is Article 27 about equality?,"['29', '27', '28']",[],"['29', '27', '28']",[],3,Complete Miss (0 retrieved)
+Emergency provisions in constitution,"['141B', '141C', '141A', '141']",[],"['141B', '141C', '141A', '141']",[],3,Complete Miss (0 retrieved)
+How to amend constitution?,['142'],[],['142'],[],3,Complete Miss (0 retrieved)
+মৌলিক অধিকার কি?,"['30', '28', '27', '26', '29', '32', '31']",[],"['29', '32', '30', '28', '27', '31', '26']",[],3,Complete Miss (0 retrieved)
+অনুচ্ছেদ ৭ সম্পর্কে বলুন,['7'],[],['7'],[],3,Complete Miss (0 retrieved)
+What is the weather today?,[],[],[],[],0,Complete Miss (0 retrieved)
+Tell me a joke,[],[],[],[],0,Complete Miss (0 retrieved)
+Capital of France,[],[],[],[],0,Complete Miss (0 retrieved)

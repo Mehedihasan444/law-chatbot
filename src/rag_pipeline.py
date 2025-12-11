@@ -484,11 +484,11 @@ class ConstitutionRAG:
                 gemini_thread.daemon = True
                 gemini_thread.start()
                 
-                # Wait maximum 10 seconds for Gemini response
-                gemini_thread.join(timeout=10)
+                # Wait maximum 60 seconds for Gemini response
+                gemini_thread.join(timeout=60)
                 
                 if gemini_thread.is_alive():
-                    print("⏰ Gemini API call timed out (>10 seconds)")
+                    print("⏰ Gemini API call timed out (>60 seconds)")
                     print("🔄 Automatically falling back to local model...")
                     self._gemini_failed = True  # Mark Gemini as failed
                     return self._use_local_model_or_simple(query, context)

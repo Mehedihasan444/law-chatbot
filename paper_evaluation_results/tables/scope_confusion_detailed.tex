@@ -1,0 +1,31 @@
+\begin{table}[htbp]
+\centering
+\caption{Scope Validator Confusion Matrix and Metrics (threshold=0.5)}
+\label{tab:scope_confusion}
+\begin{tabular}{lcccc}
+\toprule
+& \multicolumn{2}{c}{Predicted} & & \\
+\cmidrule{2-3}
+True & In-Scope & Out-of-Scope & Precision & Recall \\
+\midrule
+In-Scope & 16 (94.1\%) & 1 (5.9\%) & 0.941 & 0.941 \\
+Out-of-Scope & 1 (8.3\%) & 11 (91.7\%) & 0.917 & 0.917 \\
+\midrule
+\multicolumn{5}{l}{\textbf{Aggregate Metrics}} \\
+\midrule
+Macro F1 & \multicolumn{4}{c}{0.929} \\
+Micro F1 & \multicolumn{4}{c}{0.931} \\
+Weighted F1 & \multicolumn{4}{c}{0.931} \\
+\midrule
+\multicolumn{5}{l}{\textbf{Class Priors}} \\
+\midrule
+In-Scope & \multicolumn{4}{c}{0.586 (58.6\%)} \\
+Out-of-Scope & \multicolumn{4}{c}{0.414 (41.4\%)} \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\small
+\item Note: Confusion matrix values shown as Count (Row-Normalized \%).
+\item Decision threshold for scope classification: 0.5
+\end{tablenotes}
+\end{table}
