@@ -149,8 +149,7 @@ echo    * Docker:    docker-compose up -d
 echo.
 echo 3. Read documentation:
 echo    * README.md - Complete guide
-echo    * QUICK_START.md - Quick reference
-echo    * PROJECT_COMPLETE.md - Feature summary
+echo    * docs/QUICK_START.md - Quick reference
 echo.
 echo For help: python cli.py --help
 echo API docs: http://localhost:8000/docs (after starting API)

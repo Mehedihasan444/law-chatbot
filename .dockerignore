@@ -1,0 +1,40 @@
+# Version control
+.git
+.gitignore
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# Environment & secrets (passed via compose env instead)
+.env
+.env.local
+
+# Caches & downloaded models
+.cache/
+.huggingface/
+
+# Logs
+*.log
+logs/
+
+# Large generated artifacts (not needed for runtime image)
+figures/
+paper/
+visualizations/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Kiro config & docs not needed at runtime
+.kiro/

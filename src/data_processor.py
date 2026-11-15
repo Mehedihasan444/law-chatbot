@@ -370,7 +370,7 @@ class ConstitutionProcessor:
 
 def main():
     """Main function for command line usage"""
-    parser = argparse.ArgumentParser(description="Process Bangladesh Constitution data (English only)")
+    parser = argparse.ArgumentParser(description="Process Bangladesh Constitution data (English & Bengali)")
     parser.add_argument("--download", action="store_true", help="Download Constitution file")
     parser.add_argument("--process", action="store_true", help="Process Constitution file into chunks")
     parser.add_argument("--stats", action="store_true", help="Show processing statistics")

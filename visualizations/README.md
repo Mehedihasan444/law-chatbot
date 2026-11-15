@@ -54,13 +54,13 @@ pip install -r requirements_visualization.txt
 python generate_figures.py
 ```
 
-This will create a `figures_for_paper` directory containing all 20 figures in both PNG and PDF formats.
+This will create a `figures` directory containing all 20 figures in both PNG and PDF formats.
 
 ### 3. Output Location
 
 All figures will be saved to:
 ```
-figures_for_paper/
+figures/
 ├── fig1_system_architecture.png
 ├── fig1_system_architecture.pdf
 ├── fig2_component_interaction.png
@@ -151,7 +151,7 @@ OUTPUT_DIR = Path("custom_output_directory")
 ```latex
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.8\textwidth]{figures_for_paper/fig1_system_architecture.pdf}
+\includegraphics[width=0.8\textwidth]{figures/fig1_system_architecture.pdf}
 \caption{Overall System Architecture showing the layered design of the Bangladesh Constitution Chatbot.}
 \label{fig:system_architecture}
 \end{figure}

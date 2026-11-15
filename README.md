@@ -8,29 +8,32 @@ A comprehensive law-based chatbot for Bangladesh using RAG (Retrieval-Augmented 
 - **🌐 Bilingual Support**: Full English and Bangla language support with auto-detection
 - **🏛️ Constitutional Focus**: Specialized in Constitution-based queries for maximum accuracy
 - **📚 Citation Support**: Provides article references and legal disclaimers
-- **🔍 Hybrid Search**: Combines semantic and keyword search for better retrieval
+- **🔍 MMR Retrieval**: Maximum Marginal Relevance retrieval balances relevance with result diversity
 - **🚀 Multiple Interfaces**: REST API, Web UI (Streamlit), and CLI
 - **🔄 Smart Fallback**: **NEW!** Automatic fallback to local FLAN-T5 model when Gemini API fails (network issues, timeouts, rate limits)
 - **⚡ Zero Downtime**: Persistent fallback state ensures continuous operation even with API unavailability
 - **🐳 Docker Support**: Easy deployment with Docker and docker-compose
-- **🔒 Production-Ready**: Error handling, logging, rate limiting, and health checks
+- **🔒 Production-Ready**: Error handling, logging, and health checks
 
 ## 📁 Project Structure
 
 ```
-law chatbot/
+law-chatbot/
 ├── api.py                  # FastAPI REST API server
 ├── cli.py                  # Command-line interface
+├── start.py                # Unified startup launcher
 ├── validate_env.py         # Environment validation utility
-├── Dockerfile              # Docker configuration
-├── docker-compose.yml      # Docker Compose setup
 ├── requirements.txt        # Python dependencies
-├── .env                    # Environment variables (create from .env.example)
+├── requirements_visualization.txt
+├── install.sh / install.bat # Install scripts
+├── Dockerfile              # Docker image definition
+├── docker-compose.yml      # Multi-service (API + Streamlit) Docker setup
+├── .env / .env.example     # Environment variables
 │
-├── src/                    # Source code
-│   ├── chatbot.py          # Main chatbot logic
+├── src/                    # Core source code
+│   ├── chatbot.py          # Main chatbot orchestration
 │   ├── rag_pipeline.py     # RAG implementation
-│   ├── data_processor.py   # Data extraction and preprocessing
+│   ├── data_processor.py   # PDF extraction & chunking
 │   ├── streamlit_app.py    # Streamlit web interface
 │   └── services/           # Service modules
 │       ├── embedding_service.py
@@ -38,19 +41,46 @@ law chatbot/
 │       ├── retrieval_service.py
 │       └── vectorstore_service.py
 │
-├── config/                 # Configuration files
-│   └── config.py           # Main configuration
+├── config/                 # Configuration
+│   └── config.py
 │
 ├── data/                   # Dataset storage
-│   ├── raw/               # Original Constitution PDFs
-│   └── processed/         # Processed and chunked data
+│   ├── raw/                # Original Constitution PDFs
+│   └── processed/          # Processed & chunked data
 │
-├── vectorstore/           # Vector database storage
-│   └── constitution_faiss/
+├── vectorstore/            # FAISS vector database storage
 │
-└── tests/                 # Test files
-    ├── test_api.py
-    └── test_*.py
+├── tests/                  # Test suite
+│   ├── test_api.py
+│   ├── test_bilingual_chatbot.py
+│   ├── test_auto_fallback.py
+│   └── test_gemini_integration.py
+│
+├── scripts/                # Maintenance & research scripts
+│   ├── generate_figures.py             # Paper figure generation
+│   ├── generate_figures_custom.py
+│   ├── generate_project_flowchart.py
+│   ├── generate_paper_metrics.py
+│   ├── paper_evaluation_system.py
+│   ├── run_paper_evaluation.py
+│   ├── run_evaluation_tests.py
+│   ├── evaluate_chunk_sizes.py
+│   ├── rebuild_bilingual_vectorstore.py
+│   ├── check_connectivity.py
+│   ├── check_evaluation_readiness.py
+│   ├── check_system_resources.py
+│   └── list_models.py
+│
+├── visualizations/         # Figure-generation library (for paper)
+│
+├── docs/                   # Standalone docs (fallback details, quick start)
+│
+├── figures/                # Generated paper figures (PNG + PDF)
+│
+└── paper/                  # Research paper artifacts
+    ├── paper_10700.pdf
+    ├── paper on Contribution.docx
+    └── paper_evaluation_results/  # Evaluation outputs (figures, tables, data)
 ```
 
 ## 🚀 Quick Start
@@ -288,13 +318,13 @@ Run the test suite:
 pytest
 
 # Run API tests only
-pytest test_api.py -v
+pytest tests/test_api.py -v
 
 # Run with coverage
 pytest --cov=src --cov-report=html
 
 # Run specific test class
-pytest test_api.py::TestQueryEndpoint -v
+pytest tests/test_api.py::TestQueryEndpoint -v
 ```
 
 ## 🐳 Docker Deployment
@@ -401,18 +431,26 @@ python -c "from src.rag_pipeline import ConstitutionRAG; from config.config impo
 ```
 Gemini API Available    ➔  Use Gemini (fast, high-quality)
      ↓ (fails)
-Network Issue/Timeout   ➔  Auto-switch to Local Model
-     ↓
-Local FLAN-T5 Active    ➔  Continue serving requests
+Persistent failure      ➔  Switch to Local Model for the session
+(network/DNS/timeout)      (restart app to re-enable Gemini)
+     ↓ (fails)
+Transient failure       ➔  Fall back once, cool down ~60s, then retry Gemini
+(429/quota/503/500)        (no restart needed — auto-recovers)
 ```
 
 ### Triggers Automatic Fallback
 
-The system automatically switches to local model when:
-- ⏰ **Timeout**: Gemini API takes >10 seconds
-- 🌐 **Network Issues**: Connection failures, DNS errors
-- 🔑 **API Errors**: Invalid key, rate limits (429), service unavailable (503)
-- 💥 **Server Errors**: 500 errors, quota exceeded
+The system distinguishes two kinds of failures:
+
+**Persistent failures** — switch to the local model for the rest of the session (avoiding repeated 60s waits):
+- ⏰ **Timeout**: Gemini API takes >60 seconds to respond
+- 🌐 **Network Issues**: Connection failures, DNS errors, socket errors
+- 🔑 **Auth Errors**: Invalid API key, permission denied (403/401)
+
+**Transient failures** — fall back for that one query, then automatically retry Gemini after a short cooldown (rate limits clear over time; no restart needed):
+- 🚦 **Rate Limits**: HTTP 429, "rate limit", "too many requests"
+- 📊 **Quota Exhausted**: "quota exceeded", "resource exhausted"
+- 🛠️ **Temporary Service Issues**: 503 / service unavailable, 500
 
 ### Fallback Performance
 
@@ -425,10 +463,7 @@ The system automatically switches to local model when:
 
 ```bash
 # Run comprehensive fallback tests
-python test_auto_fallback.py
-
-# Quick fallback test
-python test_quick_fallback.py
+python tests/test_auto_fallback.py
 
 # Manual test with invalid API key
 export GEMINI_API_KEY="INVALID_KEY"
@@ -441,23 +476,29 @@ python cli.py
 When fallback occurs, you'll see:
 ```
 🌐 Attempting Gemini API call...
-⏰ Gemini API call timed out (>10 seconds)
-🔄 Automatically falling back to local model...
-✅ Successfully switched to local model!
-🏠 All subsequent queries will use local model
+⏰ Gemini API call timed out (>60 seconds)
+🔄 Gemini API unavailable — switching to local model for subsequent queries
+🏠 All subsequent queries will use local model (restart app to re-enable Gemini)
+
+# or, for a transient rate-limit:
+⏳ Transient Gemini error (rate limit/quota) — backing off temporarily
+🏠 Using fallback for this query; Gemini will be retried after ~60s
 ```
 
-### Persistent Fallback
+### Persistent vs. Transient Fallback
 
-Once Gemini fails:
-- ✅ System remembers the failure
-- ✅ All future queries use local model directly
-- ✅ No repeated Gemini retry attempts (saves time)
-- ✅ Restart application to re-enable Gemini
+**Persistent failures** (network/DNS/timeout/auth):
+- ✅ System remembers the failure for the session
+- ✅ All future queries use the local model directly (avoids repeated 60s waits)
+- ✅ Restart the application to re-enable Gemini
+
+**Transient failures** (rate limit/quota/temporary outage):
+- ✅ Falls back for the affected query only
+- ✅ Backs off for a short cooldown (~60s), then automatically retries Gemini
+- ✅ No restart needed — Gemini resumes once the rate limit clears
 
 **📚 Documentation:**
-- Full details: [AUTOMATIC_FALLBACK.md](AUTOMATIC_FALLBACK.md)
-- Implementation summary: [FALLBACK_SUMMARY.md](FALLBACK_SUMMARY.md)
+- Full details: [AUTOMATIC_FALLBACK.md](docs/AUTOMATIC_FALLBACK.md)
 
 ### Getting Help
 

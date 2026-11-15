@@ -5,6 +5,7 @@ Orchestrates the Retrieval-Augmented Generation process.
 import os
 import json
 import sys
+import time
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple
 import warnings
@@ -29,7 +30,10 @@ class ConstitutionRAG:
     RAG system orchestrator for Bangladesh Constitution queries.
     This class integrates services for embeddings, LLM, vector storage, and retrieval.
     """
-    
+    # Transient Gemini errors (rate limit / quota / temporary outage) trigger a short
+    # cooldown instead of permanently disabling Gemini for the process lifetime.
+    _TRANSIENT_COOLDOWN_SECONDS = 60
+
     def __init__(self, config: Config = None):
         self.config = config or Config()
         
@@ -49,6 +53,8 @@ class ConstitutionRAG:
         self._all_chunks_cache = None  # lazy-loaded processed chunks
         self._gemini_failed = False  # Track if Gemini has failed to enable persistent fallback
         self._fallback_attempted = False  # Track if we've already attempted fallback
+        self._fallback_happened = False  # Per-query flag: True when a response came from a fallback path
+        self._gemini_cooldown_until = 0.0  # When transient (rate-limit) errors occur, retry Gemini after this time
         
         # Curated concise summaries for key articles as last-resort fallbacks
         self._known_article_summaries = {
@@ -166,7 +172,7 @@ class ConstitutionRAG:
     def _format_human_friendly_response(self, query: str, context: str, language: str = 'en') -> str:
         """Formats a human-friendly response from raw context."""
         q = query.lower().strip()
-        excerpts = context.split("Excerpt")
+        excerpts = context.split("\n\n")
 
         # Specific handlers
         if "emergency" in q or "জরুরি" in q or "জরুরী" in q:
@@ -234,7 +240,7 @@ class ConstitutionRAG:
         """Extracts short, key sentences as bullets."""
         import re
         sentences = []
-        for ex in excerpts[1:]:
+        for ex in excerpts:
             parts = re.split(r"(?<=[\.!?])\s+", ex.strip())
             for s in parts:
                 s_clean = re.sub(r"\s+", " ", s).strip()
@@ -269,8 +275,17 @@ class ConstitutionRAG:
             "**Key Safeguards:** Parliamentary approval, time limits, and the requirement for the Prime Minister's consent act as checks on this power."
         )
 
-    def _format_preamble_response(self) -> str:
+    def _format_preamble_response(self, language: str = 'en') -> str:
         """Provides a human-friendly summary of the Preamble."""
+        if language == 'bn':
+            return (
+                "**উদ্দেশিকা – এতে যা বলা হয়েছে**\n\n"
+                "উদ্দেশিকা বাংলাদেশের প্রতিষ্ঠার রূপ নির্ধারণ করে। সংক্ষেপে, এটি:\n"
+                "- জাতীয়তাবাদ, সমাজতন্ত্র (অর্থনৈতিক ও সামাজিক ন্যায় বিচার), গণতন্ত্র এবং ধর্মনিরপেক্ষতার আদর্শ ঘোষণা করে।\n"
+                "- এমন একটি সমাজ প্রতিষ্ঠার প্রতিশ্রুতি দেয় যেখানে আইনের শাসন, মৌলিক মানবাধিকার ও বিচার সব নাগরিকের জন্য নিশ্চিত করা হবে।\n"
+                "- বাংলাদেশকে একটি সার্বভৌম গণপ্রজাতন্ত্রী রাষ্ট্র হিসেবে গঠনের সংকল্প ব্যক্ত করে।\n\n"
+                "উদ্ধৃতি: উদ্দেশিকা (বাংলাদেশের সংবিধান)।"
+            )
         return (
             "**Preamble – What it states**\n\n"
             "The Preamble sets Bangladesh’s founding vision. In summary, it:\n"
@@ -313,7 +328,7 @@ class ConstitutionRAG:
         """Finds article text in retrieved excerpts using regex."""
         import re
         matcher = re.compile(rf"Article\s+{re.escape(article)}\b", re.IGNORECASE)
-        for ex in excerpts[1:]:
+        for ex in excerpts:
             if m := matcher.search(ex):
                 start = max(0, m.start() - 200)
                 end = min(len(ex), m.end() + 1200)
@@ -357,21 +372,38 @@ class ConstitutionRAG:
         cleaned = [b.strip(":- ") for b in bullets if 20 <= len(b) <= 220]
         return cleaned[:5]
     
-    def _is_gemini_fatal_error(self, error_msg: str) -> bool:
-        """Checks if an error indicates Gemini API is unavailable and should trigger fallback."""
-        error_keywords = [
-            'failed to connect', 'nameresolutionerror', 'max retries exceeded',
-            'getaddrinfo failed', '503', 'unavailable', 'timeout',
-            'connection error', 'network error', 'deadline exceeded',
-            'resource exhausted', '429', 'quota exceeded', '500',
-            'service unavailable', 'temporary failure', 'retry',
-            'connect timeout', 'read timeout', 'socket'
-        ]
+    # Errors that indicate Gemini is genuinely unreachable and won't recover on its
+    # own (network/DNS/auth/timeout). These switch to the local model for the session.
+    _FATAL_ERROR_KEYWORDS = [
+        'failed to connect', 'nameresolutionerror', 'max retries exceeded',
+        'getaddrinfo failed', 'timeout', 'deadline exceeded',
+        'connection error', 'network error', 'connect timeout', 'read timeout',
+        'socket', 'api key not valid', 'permission denied', '403', '401',
+    ]
+
+    # Errors that are temporary (rate limit / quota / short service outage) and clear
+    # over time. These trigger a short cooldown instead of permanently disabling Gemini.
+    _TRANSIENT_ERROR_KEYWORDS = [
+        '429', 'quota exceeded', 'resource exhausted', 'rate limit',
+        'too many requests', '503', 'service unavailable', 'unavailable',
+        'temporary failure', '500', 'retry',
+    ]
+
+    def _is_gemini_transient_error(self, error_msg: str) -> bool:
+        """Checks if an error is transient (rate limit/quota/temporary) and should NOT
+        permanently disable Gemini — fall back for this query and retry later."""
         error_lower = error_msg.lower()
-        return any(keyword in error_lower for keyword in error_keywords)
+        return any(keyword in error_lower for keyword in self._TRANSIENT_ERROR_KEYWORDS)
+
+    def _is_gemini_fatal_error(self, error_msg: str) -> bool:
+        """Checks if an error indicates Gemini API is persistently unavailable (network/
+        DNS/auth/timeout) and should trigger a permanent switch to the local model."""
+        error_lower = error_msg.lower()
+        return any(keyword in error_lower for keyword in self._FATAL_ERROR_KEYWORDS)
     
-    def _use_local_model_or_simple(self, query: str, context: str) -> str:
+    def _use_local_model_or_simple(self, query: str, context: str, language: str = 'en') -> str:
         """Attempts to use local model, falling back to simple response if unavailable."""
+        self._fallback_happened = True  # reaching this method means we fell back from the primary LLM
         # If we haven't attempted fallback yet, try to initialize local model
         if not self._fallback_attempted and hasattr(self, 'llm_service'):
             self._fallback_attempted = True
@@ -435,18 +467,24 @@ class ConstitutionRAG:
         """Generates a response using the LLM (Gemini or local model) with automatic fallback."""
         if not self.llm:
             print("🔄 No LLM available, using simple response generation")
+            self._fallback_happened = True
             return self.generate_response_simple(query, context, language=language)
         
         try:
             # Check if we're using Gemini (ChatGoogleGenerativeAI) or local model
             llm_type = getattr(self.llm_service, 'llm_type', 'local')
             
-            # If Gemini previously failed, skip directly to local model or fallback
+            # If Gemini previously failed (permanent), skip directly to local model or fallback
             if self._gemini_failed and llm_type == 'gemini':
                 print("⚠️ Gemini API previously failed, using local model...")
                 return self._use_local_model_or_simple(query, context, language=language)
             
             if llm_type == 'gemini':
+                # If Gemini hit a transient rate-limit recently, back off temporarily
+                # rather than permanently disabling it for the process lifetime.
+                if self._gemini_cooldown_until and time.time() < self._gemini_cooldown_until:
+                    print("⏳ Gemini in transient cooldown (rate limit) — using fallback temporarily")
+                    return self._use_local_model_or_simple(query, context, language=language)
                 # For Gemini, use timeout wrapper to prevent hanging
                 print("🌐 Attempting Gemini API call...")
                 
@@ -491,21 +529,27 @@ class ConstitutionRAG:
                     print("⏰ Gemini API call timed out (>60 seconds)")
                     print("🔄 Automatically falling back to local model...")
                     self._gemini_failed = True  # Mark Gemini as failed
-                    return self._use_local_model_or_simple(query, context)
+                    return self._use_local_model_or_simple(query, context, language=language)
                 elif result_container["error"]:
                     error_msg = result_container["error"]
                     print(f"❌ Gemini API error: {error_msg}")
-                    # Check if it's a network/API error that warrants fallback
-                    if self._is_gemini_fatal_error(error_msg):
-                        print("🔄 Automatically falling back to local model...")
-                        self._gemini_failed = True  # Mark Gemini as failed
+                    # Transient errors (rate limit/quota/temporary): fall back for this
+                    # query only and cool down briefly — don't permanently disable Gemini.
+                    if self._is_gemini_transient_error(error_msg):
+                        print("⏳ Transient Gemini error (rate limit/quota) — backing off temporarily")
+                        self._gemini_cooldown_until = time.time() + self._TRANSIENT_COOLDOWN_SECONDS
                         return self._use_local_model_or_simple(query, context, language=language)
-                    else:
-                        raise Exception(error_msg)
+                    # Fatal errors (network/DNS/timeout): switch to local for the session.
+                    if self._is_gemini_fatal_error(error_msg):
+                        print("🔄 Gemini API unavailable — switching to local model for subsequent queries")
+                        self._gemini_failed = True
+                        return self._use_local_model_or_simple(query, context, language=language)
+                    raise Exception(error_msg)
                 elif result_container["response"]:
                     response_text = result_container["response"]
                     print("✅ Gemini response generated successfully")
-                    self._gemini_failed = False  # Reset failure flag on success
+                    self._gemini_failed = False  # Reset permanent failure flag on success
+                    self._gemini_cooldown_until = 0.0  # rate limit cleared — stop cooling down
                 else:
                     print("❌ No response received from Gemini")
                     print("🔄 Automatically falling back to local model...")
@@ -530,15 +574,22 @@ class ConstitutionRAG:
             print(f"❌ LLM generation failed: {e}")
             llm_type = getattr(self.llm_service, 'llm_type', 'local')
             
-            # Check if this is a Gemini error that warrants automatic fallback
-            if llm_type == 'gemini' and self._is_gemini_fatal_error(str(e)):
-                print("🌐 Network/API connectivity issue detected with Gemini API")
-                print("💡 Automatically switching to local model for subsequent queries")
-                self._gemini_failed = True  # Mark Gemini as persistently failed
-                return self._use_local_model_or_simple(query, context, language=language)
+            if llm_type == 'gemini':
+                err = str(e)
+                # Transient: fall back for this query only, cool down, retry Gemini later.
+                if self._is_gemini_transient_error(err):
+                    print("⏳ Transient Gemini error (rate limit/quota) — backing off temporarily")
+                    self._gemini_cooldown_until = time.time() + self._TRANSIENT_COOLDOWN_SECONDS
+                    return self._use_local_model_or_simple(query, context, language=language)
+                # Fatal: switch to local for the session.
+                if self._is_gemini_fatal_error(err):
+                    print("🌐 Gemini API unavailable — switching to local model for subsequent queries")
+                    self._gemini_failed = True
+                    return self._use_local_model_or_simple(query, context, language=language)
             
             # For other errors, use simple fallback
             print("🔄 Falling back to simple response generation")
+            self._fallback_happened = True
             return self.generate_response_simple(query, context, language=language)
     
     def _truncate_context_for_llm(self, context: str, query: str, max_tokens: int = 400) -> str:
@@ -581,6 +632,7 @@ class ConstitutionRAG:
     
     def query(self, question: str, use_llm: bool = False, language: str = 'en') -> Dict:
         """Main query interface with improved fallback handling."""
+        self._fallback_happened = False  # reset per query
         try:
             relevant_docs = self.retrieve_relevant_chunks(question)
             context = self.format_context(relevant_docs)
@@ -592,6 +644,7 @@ class ConstitutionRAG:
                 except Exception as llm_error:
                     print(f"⚠️ LLM generation failed during query: {llm_error}")
                     print("🔄 Falling back to simple response generation")
+                    self._fallback_happened = True
                     response = self.generate_response_simple(question, context, language=language)
             else:
                 response = self.generate_response_simple(question, context, language=language)
@@ -602,7 +655,7 @@ class ConstitutionRAG:
                 "context": context,
                 "num_sources": len(relevant_docs),
                 "sources": [doc.metadata for doc in relevant_docs],
-                "fallback_used": not (use_llm and self.llm) or "LLM generation failed" in str(locals().get('llm_error', ''))
+                "fallback_used": (use_llm and self.llm) and self._fallback_happened,
             }
             
         except Exception as e:

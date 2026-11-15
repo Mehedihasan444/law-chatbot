@@ -49,6 +49,7 @@ pyyaml==6.0.1
 # Testing and evaluation
 pytest==8.1.1
 pytest-asyncio==0.23.5
+pytest-cov>=4.1.0
 httpx==0.26.0
 ragas==0.1.7
 scikit-learn==1.4.2

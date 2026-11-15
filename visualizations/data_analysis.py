@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
 
-OUTPUT_DIR = Path("figures_for_paper")
+OUTPUT_DIR = Path(__file__).parent.parent / "figures"
 
 def save_fig(fig, name):
     """Helper to save figure"""
